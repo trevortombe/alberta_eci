@@ -1,0 +1,8 @@
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+/*.csv
+!old_oil.csv
+!cfib.csv
+!ECI_data.RData
