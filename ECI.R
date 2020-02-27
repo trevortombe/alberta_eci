@@ -10,8 +10,8 @@ load("ECI_data.RData")
 # Compile the Data #
 ####################
 
-# Define groups of variables
-egy_vars=c("wells","oil","rigs","oilprice","exports_energy")
+# Define groups of variables (include wells or not)
+egy_vars=c("oil","rigs","oilprice","exports_energy")
 biz_vars=c("mfg","durable","nondurable","mfgchem","mfgmetal","mfgfood","mfgmachinery","mfgpetro","trade","cfib","exports_nonenergy","self_emp")
 lab_vars=c("employment_rate","employment","unemployment","unemp_men_prime","unemp_women_prime","unemp_duration","EIclaims","SEPH","SEPHprivate","SEPHgoods","SEPHservices","SEPHconstruct","hours","full_part_emp","under_unemp","private_emp","partrate")
 con_vars=c("housing","earnings","retail","restaurant_spend","vehicles","trucks","MLS")
@@ -130,4 +130,78 @@ ggplot(plotdata,aes(Ref_Date,index,group=group,fill=group))+
        x="",title="A Monthly Index of Economic Conditions in Alberta",
        subtitle="The index is constructed to have mean zero and unit variance. A value of +1 means YoY growth is 1 standard deviation above trend.",
        caption="Sources: Own calculatons from 41 monthly data series from Statistics Canada, CFIB, and the AER. Graph by @trevortombe.")
-ggsave("plot.png",width=8,height=4.5,dpi=200)
+ggsave("plot2.png",width=8,height=4.5,dpi=200)
+
+# Aggregate by Year
+GDP<-fromJSON(paste(url,"GrossDomesticProduct",sep="")) %>%
+  filter(Industries=="All industries" & Type=="Gross domestic product at basic prices") %>%
+  select(When,gdp=Alberta)
+GDP<-ts(GDP$gdp,frequency=1,start=c(1997,1))
+
+plotdata2<-plotdata<-data.frame(Ref_Date=seq(as.yearmon("2002-01"),
+                                             length.out=length(ABindex),
+                                             by=1/12)) %>%
+  cbind(ABindex) %>%
+  filter(Ref_Date>="Jan 2002") %>%
+  mutate(year=year(Ref_Date)) %>%
+  left_join(
+    data.frame(GDP) %>% 
+      mutate(GDP=as.numeric(GDP)) %>%
+      cbind(data.frame(year=seq(1997,2018,1))) %>% 
+      mutate(GDPGrowth=(GDP/lag(GDP,1)-1)),by="year"
+  ) %>%
+  mutate(GDPGrowth=ifelse(month(Ref_Date) %in% c(1,12),NA,GDPGrowth))
+
+# Adjust scale
+regresults<-lm(GDPGrowth~ABindex,data=plotdata2)
+coefficients(regresults)[1]
+coefficients(regresults)[2]
+plotdata3<-plotdata2 %>%
+  mutate(index=coefficients(regresults)[2]*ABindex+coefficients(regresults)[1])
+today<-max(plotdata2$Ref_Date)
+# Your preferred color scheme (https://www.color-hex.com/color-palette/33490)
+col<-c("#CC2529","#396ab1","#3E9651","#DA7C30","#535154","#6B4C9A","#922428","#948B3D")
+colbar<-c("#D35E60","#7293CB","#84BA5B","#E1974C","#808585","#9067A7","#AB6857","#CCC210")
+ggplot(plotdata3,aes(Ref_Date)) +
+  geom_col(aes(y=GDPGrowth),fill=colbar[2],color=colbar[2]) +
+  geom_hline(aes(yintercept=0), colour="black", size=1) +
+  geom_line(aes(y=index),size=2,color=col[1])+
+  annotate('text',x=2013.5,y=-.0375,label="Actual GDP\nGrowth",
+           fontface="bold",color=colbar[2])+
+  annotate('text',x=2018,y=.08,label="\"Alberta Economic\nConditions Index\"",
+           fontface="bold",color=col[1],hjust=1)+
+  geom_segment(x=2019,xend=2020,
+               y=(plotdata3 %>% filter(year==2019) %>% summarise(index=mean(index)))$index,
+               yend=(plotdata3 %>% filter(year==2019) %>% summarise(index=mean(index)))$index,size=1.5)+
+  annotate('text',x=2021,y=-0.0125,label="2019 Avg: 1.2%",
+           hjust=1,size=3)+
+  mytheme+
+  scale_y_continuous(breaks = seq(-0.1,0.1,0.025),label=percent,
+                     limit=c(-0.075,0.1))+
+  scale_x_continuous(limit=c(2002,2021),expand=c(0,0),
+                     breaks=seq(2002.5,2020.75,2),
+                     labels=seq(2002,2020,2))+
+  labs(x="",y="Year-over-Year Change (%)",
+       title=paste("Index of Alberta's Monthly Economic Conditions, Jan 2002 to",today),
+       subtitle="The index is constructed to have mean zero and unit variance. It is then rescale to best fit actual GDP growth.",
+       caption="Sources: Own calculatons from 41 monthly data series from Statistics Canada, CFIB, and the AER. Graph by @trevortombe.")
+ggsave("GDPplot.png",width=8,height=4,dpi=200)
+
+annual<-plotdata3 %>% group_by(year) %>%
+  summarise(index=mean(index)) %>%
+  left_join(
+    data.frame(GDP) %>% 
+      mutate(GDP=as.numeric(GDP)) %>%
+      cbind(data.frame(year=seq(1997,2018,1))) %>% 
+      mutate(GDPGrowth=(GDP/lag(GDP,1)-1)),by="year"
+  ) %>%
+  drop_na()
+cor(annual$index,annual$GDPGrowth)
+annual %>%
+  select(year,index,GDPGrowth) %>%
+  gather(data,value,-year) %>%
+  ggplot(aes(year,value,group=data,fill=data))+
+  geom_col(position='dodge')
+summary(lm(GDPGrowth~index,data=annual))
+1.19*(1.117261-2*0.097661)
+1.19*(1.117261+2*0.097661)
