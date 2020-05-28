@@ -11,9 +11,9 @@ load("ECI_data.RData")
 ####################
 
 # Define groups of variables (include wells or not)
-egy_vars=c("oil","rigs","oilprice","exports_energy")
+egy_vars=c("oil","rigs","oilprice","exports_energy","wells")
 biz_vars=c("mfg","durable","nondurable","mfgchem","mfgmetal","mfgfood","mfgmachinery","mfgpetro","trade","cfib","exports_nonenergy","self_emp")
-lab_vars=c("employment_rate","employment","unemployment","unemp_men_prime","unemp_women_prime","unemp_duration","EIclaims","SEPH","SEPHprivate","SEPHgoods","SEPHservices","SEPHconstruct","hours","full_part_emp","under_unemp","private_emp","partrate")
+lab_vars=c("employment_rate","employment","unemployment","unemp_men_prime","unemp_women_prime","unemp_duration","SEPH","SEPHprivate","SEPHgoods","SEPHservices","SEPHconstruct","hours","full_part_emp","under_unemp","private_emp","partrate")
 con_vars=c("housing","earnings","retail","restaurant_spend","MLS") # removed during pandemic: ,"vehicles","trucks"
 
 # Form Matrix of Main Data
@@ -99,13 +99,15 @@ ggplot(plotdata,aes(Ref_Date,index,group=group,fill=group))+
   geom_segment(x=max(plotdata$Ref_Date)+0.3,xend=max(plotdata$Ref_Date)+0.3,
                y=-0.1,yend=-0.5,arrow=arrow(length=unit(1,'mm')))+
   geom_text(data=plotdata %>% filter(Ref_Date==max(Ref_Date),group=="Labour Markets"),
-            aes(y=-1.25,label=paste("Latest:",round(ABindex,2))))+
+            aes(y=ABindex,label=paste("Latest:\n",round(ABindex,2))),hjust=-0.25,fontface='bold')+
+  geom_point(data=plotdata %>% filter(Ref_Date==max(Ref_Date),group=="Labour Markets"),
+            aes(y=ABindex),size=2.5,shape=21,stroke=2.5,fill='white')+
   labs(y="Index of Economic Activity",
        x="",title=paste0("Economic Conditions Index for Alberta (",min(plotdata$Ref_Date)," to ",max(plotdata$Ref_Date),")"),
-       subtitle="Monthly data of economic activity (GDP) is available only for Canada, not provinces. Instead, this index 'averages' 41 monthly data series.
+       subtitle="Monthly data of economic activity (GDP) is available only for Canada, not provinces. Instead, this index 'averages' 38 monthly data series.
 The index is constructed to have mean zero and unit variance. A value of +1 means YoY growth is 1 standard deviation above trend.",
        caption="Sources: Own calculatons from various Statistics Canada data tables. Graph by @trevortombe.
-It is the 1st principal component from 41 monthly data series. Based on the Chicago Fed National Activity Index.")
+It is the 1st principal component from 38 monthly data series. Based on the Chicago Fed National Activity Index.")
 ggsave("plot.png",width=8,height=4.5,dpi=200)
 
 ggplot(plotdata,aes(Ref_Date,index,group=group,fill=group))+
