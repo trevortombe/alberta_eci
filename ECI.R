@@ -24,7 +24,7 @@ for (v in variables){
     left_join(get(v) %>% mutate(When=as.yearmon(When)),by="When")
 }
 ABdata<-ABdata %>%
-  filter(When>="Jan 2001") %>%
+  filter(When>="Jan 2001" & When<="Feb 2020") %>%
   ts(frequency=12,start=c(2001,01))
 
 # Convert nominal variables to real
@@ -116,7 +116,7 @@ ggplot(plotdata,aes(Ref_Date,index,group=group,fill=group))+
   geom_hline(yintercept=0,size=1,color="gray50")+
   scale_fill_brewer(name="",palette="Set1")+
   mytheme+
-  scale_y_continuous(expand=c(0,0),limit=c(-2.5,1.5),breaks = pretty_breaks(n=6))+
+  scale_y_continuous(expand=c(0,0),limit=c(NA,1.5),breaks = pretty_breaks(n=6))+
   scale_x_continuous(expand=c(0,0),breaks=pretty_breaks(n=8),limit=c(NA,max(plotdata$Ref_Date)+1))+
   annotate('text',x=max(plotdata$Ref_Date)+0.35,hjust=0,y=0.35,label="Above\nTrend",size=3)+
   annotate('text',x=max(plotdata$Ref_Date)+0.35,hjust=0,y=-0.35,label="Below\nTrend",size=3)+
@@ -132,7 +132,7 @@ ggplot(plotdata,aes(Ref_Date,index,group=group,fill=group))+
        x="",title="A Monthly Index of Economic Conditions in Alberta",
        subtitle="The index is constructed to have mean zero and unit variance. A value of +1 means YoY growth is 1 standard deviation above trend.",
        caption="Sources: Own calculatons from 41 monthly data series from Statistics Canada, CFIB, and the AER. Graph by @trevortombe.")
-ggsave("plot2.png",width=8,height=4.5,dpi=200)
+ggsave("plot.png",width=7.5,height=4,dpi=200)
 
 # Aggregate by Year
 GDP<-fromJSON(paste(url,"GrossDomesticProduct",sep="")) %>%
