@@ -24,7 +24,7 @@ for (v in variables){
     left_join(get(v) %>% mutate(When=as.yearmon(When)),by="When")
 }
 ABdata<-ABdata %>%
-  filter(When>="Jan 2001" & When<="Feb 2020") %>%
+  filter(When>="Jan 2001") %>%
   ts(frequency=12,start=c(2001,01))
 
 # Convert nominal variables to real
@@ -82,18 +82,17 @@ plotdata<-data.frame(Ref_Date=seq(as.yearmon("2002-01"),length.out=length(ABinde
   mutate(group=ifelse(group=="Labour","Labour Markets",group),
          group=ifelse(group=="Energy","Energy Sector",group),
          group=ifelse(group=="Business","Business Activity",group),
-         group=ifelse(group=="Households","Households Income/Spending",group)) %>% 
-  filter(Ref_Date>="Jan 2011")
+         group=ifelse(group=="Households","Households Income/Spending",group))
 ggplot(plotdata,aes(Ref_Date,index,group=group,fill=group))+
   geom_col(position="stack",color="white",size=0.1)+
   geom_line(aes(y=ABindex),size=1.5)+
   geom_hline(yintercept=0,size=1,color="gray50")+
   scale_fill_brewer(name="",palette="Set1")+
   mytheme+
-  scale_y_continuous(expand=c(0,0))+
-  scale_x_continuous(expand=c(0,0),breaks=pretty_breaks(n=8),limit=c(NA,max(plotdata$Ref_Date)+1))+
-  annotate('text',x=max(plotdata$Ref_Date)+0.35,hjust=0,y=0.35,label="Above\nTrend",size=3)+
-  annotate('text',x=max(plotdata$Ref_Date)+0.35,hjust=0,y=-0.35,label="Below\nTrend",size=3)+
+  scale_y_continuous(expand=c(0,0),limit=c(-6,2))+
+  scale_x_continuous(expand=c(0,0),breaks=pretty_breaks(n=8),limit=c(NA,max(plotdata$Ref_Date)+2))+
+  annotate('text',x=max(plotdata$Ref_Date)+0.35,hjust=0,y=0.5,label="Above\nTrend",size=3)+
+  annotate('text',x=max(plotdata$Ref_Date)+0.35,hjust=0,y=-0.5,label="Below\nTrend",size=3)+
   geom_segment(x=max(plotdata$Ref_Date)+0.3,xend=max(plotdata$Ref_Date)+0.3,
                y=0.1,yend=0.5,arrow=arrow(length=unit(1,'mm')))+
   geom_segment(x=max(plotdata$Ref_Date)+0.3,xend=max(plotdata$Ref_Date)+0.3,

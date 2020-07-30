@@ -217,7 +217,7 @@ wells<-fromJSON(paste(url,"WellsDrilled",sep="")) %>%
   select(When,wells=Alberta)
 # manual add wells for latest month (if unavailable) from https://www.aer.ca/providing-information/data-and-reports/statistical-reports/st59.html
 wells<-wells %>%
-  rbind(data.frame(When=as.yearmon("2020-03"),wells=251+19))
+  rbind(data.frame(When=as.yearmon("2020-05"),wells=38))
 # Seasonally adjust
 p<-ggsdc(wells, aes(x = When, y = wells),frequency=12,method = "seas") + geom_line()
 wells<-p$data %>% 
