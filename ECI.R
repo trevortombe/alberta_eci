@@ -109,7 +109,7 @@ The index is constructed to have mean zero and unit variance. A value of +1 mean
 It is the 1st principal component from 38 monthly data series. Based on the Chicago Fed National Activity Index.")
 ggsave("plot.png",width=8,height=4.5,dpi=200)
 
-ggplot(plotdata,aes(Ref_Date,index,group=group,fill=group))+
+ggplot(plotdata %>% filter(Ref_Date>=2012),aes(Ref_Date,index,group=group,fill=group))+
   geom_col(position="stack",color="white",size=0.1,width=1/12)+
   geom_line(aes(y=ABindex),size=1.5)+
   geom_hline(yintercept=0,size=1,color="gray50")+
@@ -124,7 +124,7 @@ ggplot(plotdata,aes(Ref_Date,index,group=group,fill=group))+
   geom_segment(x=max(plotdata$Ref_Date)+0.3,xend=max(plotdata$Ref_Date)+0.3,
                y=-0.1,yend=-0.5,arrow=arrow(length=unit(1,'mm')))+
   geom_text(data=plotdata %>% filter(Ref_Date==2019.4,group=="Labour Markets"),
-            aes(y=-1.25,label="A Second\nRecession?"),fontface="bold",color="firebrick")+
+            aes(y=-1,label="A Second\nRecession?"),fontface="bold",color="firebrick")+
   geom_text(data=plotdata %>% filter(Ref_Date==2014.5,group=="Labour Markets"),
             aes(y=-1.5,label="The 2015/16\nRecession"),fontface="bold",color="firebrick")+
   labs(y="Index of Economic Activity",
@@ -148,7 +148,7 @@ plotdata2<-plotdata<-data.frame(Ref_Date=seq(as.yearmon("2002-01"),
   left_join(
     data.frame(GDP) %>% 
       mutate(GDP=as.numeric(GDP)) %>%
-      cbind(data.frame(year=seq(1997,2018,1))) %>% 
+      cbind(data.frame(year=seq(1997,2019,1))) %>% 
       mutate(GDPGrowth=(GDP/lag(GDP,1)-1)),by="year"
   ) %>%
   mutate(GDPGrowth=ifelse(month(Ref_Date) %in% c(1,12),NA,GDPGrowth))
@@ -193,7 +193,7 @@ annual<-plotdata3 %>% group_by(year) %>%
   left_join(
     data.frame(GDP) %>% 
       mutate(GDP=as.numeric(GDP)) %>%
-      cbind(data.frame(year=seq(1997,2018,1))) %>% 
+      cbind(data.frame(year=seq(1997,2019,1))) %>% 
       mutate(GDPGrowth=(GDP/lag(GDP,1)-1)),by="year"
   ) %>%
   drop_na()
