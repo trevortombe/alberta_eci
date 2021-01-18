@@ -169,16 +169,16 @@ ggplot(plotdata3,aes(Ref_Date)) +
   geom_line(aes(y=index),size=2,color=col[1])+
   annotate('text',x=2013.5,y=-.0375,label="Actual GDP\nGrowth",
            fontface="bold",color=colbar[2])+
-  annotate('text',x=2018,y=.08,label="\"Alberta Economic\nConditions Index\"",
+  annotate('text',x=2018,y=.0875,label="\"Alberta Economic\nConditions Index\"",
            fontface="bold",color=col[1],hjust=1)+
-  geom_segment(x=2019,xend=2020,
-               y=(plotdata3 %>% filter(year==2019) %>% summarise(index=mean(index)))$index,
-               yend=(plotdata3 %>% filter(year==2019) %>% summarise(index=mean(index)))$index,size=1.5)+
-  annotate('text',x=2021,y=-0.0125,label="2019 Avg: 1.2%",
-           hjust=1,size=3)+
+  #geom_segment(x=2019,xend=2020,
+  #             y=(plotdata3 %>% filter(year==2019) %>% summarise(index=mean(index)))$index,
+  #             yend=(plotdata3 %>% filter(year==2019) %>% summarise(index=mean(index)))$index,size=1.5)+
+  #annotate('text',x=2021,y=-0.0125,label="2019 Avg: 1.2%",
+  #         hjust=1,size=3)+
   mytheme+
-  scale_y_continuous(breaks = seq(-0.1,0.1,0.025),label=percent,
-                     limit=c(-0.075,0.1))+
+  scale_y_continuous(breaks = seq(-0.15,0.1,0.025),label=percent,
+                     limit=c(NA,0.1))+
   scale_x_continuous(limit=c(2002,2021),expand=c(0,0),
                      breaks=seq(2002.5,2020.75,2),
                      labels=seq(2002,2020,2))+
