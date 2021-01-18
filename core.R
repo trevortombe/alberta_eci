@@ -36,27 +36,35 @@ getTABLE<-function(x) {
     download.file(url,temp)
   }
   unzip(temp,paste0(x,".csv"))
-  rawdata<-read.csv(paste0(x,".csv"),encoding="UTF-8",stringsAsFactors=FALSE)
+  rawdata<-fread(paste0(x,".csv"),encoding="UTF-8",stringsAsFactors=FALSE)
   colnames(rawdata)[1]<-"Ref_Date"
   data<-rawdata %>%
     dplyr::rename(Value=VALUE) %>%
-    select(-UOM_ID,-SCALAR_ID)
+    select(-UOM_ID,-SCALAR_ID) %>%
+    dplyr::rename_all(list(~make.names(.))) # this replaces the spaces with dots in the column names
   if (class(data$Ref_Date)=="character" & !grepl("/",data[1,"Ref_Date"])){
-    data<-data %>% #mutate(Ref_Date=ifelse(grepl("/",Ref_Date),Ref_Date,Ref_Date=as.yearmon(Ref_Date)))
+    data<-data %>%
       mutate(Ref_Date=as.yearmon(Ref_Date))
+  }
+  if ("GEO" %in% colnames(data)){
+    data <- data %>%
+      left_join(provnames,by="GEO")
   }
   if ("North.American.Industry.Classification.System..NAICS." %in% colnames(data)){
     data <- data %>%
       rename(NAICS=North.American.Industry.Classification.System..NAICS.) %>%
-      mutate(NAICS=ifelse(regexpr(" \\[",NAICS)>1,
+      mutate(NAICScode=str_match(NAICS,"\\[(.*?)\\]")[,2],
+             NAICS=ifelse(regexpr(" \\[",NAICS)>1,
                           substr(NAICS,1,regexpr(" \\[",NAICS)-1),NAICS))
   }
-  if ("North.American.Product.Classification.System..NAPCS." %in% colnames(data)){
+  if (any(grepl("North.American.Product.Classification.System..NAPCS.",colnames(data)))){
+    colnames(data)[grepl("North.American.Product.Classification.System..NAPCS.",colnames(data))]<-"NAPCS"
     data <- data %>%
-      rename(NAPCS="North.American.Product.Classification.System..NAPCS.") %>%
       mutate(NAPCS=ifelse(regexpr(" \\[",NAPCS)>1,
                           substr(NAPCS,1,regexpr(" \\[",NAPCS)-1),NAPCS))
   }
+  sourcetable<-gsub("(\\d{2})(\\d{2})(\\d{4})$","\\1-\\2-\\3",x)
+  comment(data)<-paste("Statistics Canada data table",sourcetable)
   return(data)
 }
 getTABLEraw<-function(x) {
@@ -72,15 +80,35 @@ getTABLEraw<-function(x) {
   return(rawdata)
 }
 loadTABLE<-function(x) {
-  rawdata<-read.csv(paste0(x,".csv"),encoding="UTF-8",stringsAsFactors=FALSE)
+  rawdata<-fread(paste0(x,".csv"),encoding="UTF-8",stringsAsFactors=FALSE)
   colnames(rawdata)[1]<-"Ref_Date"
   data<-rawdata %>%
     dplyr::rename(Value=VALUE) %>%
-    select(-UOM_ID,-SCALAR_ID)
+    select(-UOM_ID,-SCALAR_ID) %>%
+    dplyr::rename_all(list(~make.names(.))) # this replaces the spaces with dots in the column names
   if (class(data$Ref_Date)=="character" & !grepl("/",data$Ref_Date)){
     data<-data %>% #mutate(Ref_Date=ifelse(grepl("/",Ref_Date),Ref_Date,Ref_Date=as.yearmon(Ref_Date)))
       mutate(Ref_Date=as.yearmon(Ref_Date))
   }
+  if ("GEO" %in% colnames(data)){
+    data <- data %>%
+      left_join(provnames,by="GEO")
+  }
+  if ("North.American.Industry.Classification.System..NAICS." %in% colnames(data)){
+    data <- data %>%
+      rename(NAICS=North.American.Industry.Classification.System..NAICS.) %>%
+      mutate(NAICScode=str_match(NAICS,"\\[(.*?)\\]")[,2],
+             NAICS=ifelse(regexpr(" \\[",NAICS)>1,
+                          substr(NAICS,1,regexpr(" \\[",NAICS)-1),NAICS))
+  }
+  if (any(grepl("North.American.Product.Classification.System..NAPCS.",colnames(data)))){
+    colnames(data)[grepl("North.American.Product.Classification.System..NAPCS.",colnames(data))]<-"NAPCS"
+    data <- data %>%
+      mutate(NAPCS=ifelse(regexpr(" \\[",NAPCS)>1,
+                          substr(NAPCS,1,regexpr(" \\[",NAPCS)-1),NAPCS))
+  }
+  sourcetable<-gsub("(\\d{2})(\\d{2})(\\d{4})$","\\1-\\2-\\3",x)
+  comment(data)<-paste("Statistics Canada data table",sourcetable)
   return(data)
 }
 
