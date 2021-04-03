@@ -131,7 +131,7 @@ ggplot(plotdata %>% filter(Ref_Date>=2012),aes(Ref_Date,index,group=group,fill=g
        x="",title="A Monthly Index of Economic Conditions in Alberta",
        subtitle="The index is constructed to have mean zero and unit variance. A value of +1 means YoY growth is 1 standard deviation above trend.",
        caption="Sources: Own calculatons from 41 monthly data series from Statistics Canada, CFIB, and the AER. Graph by @trevortombe.")
-ggsave("plot.png",width=7.5,height=4,dpi=200)
+# ggsave("plot.png",width=7.5,height=4,dpi=200)
 
 # Aggregate by Year
 GDP<-fromJSON(paste(url,"GrossDomesticProduct",sep="")) %>%
@@ -165,7 +165,7 @@ col<-c("#CC2529","#396ab1","#3E9651","#DA7C30","#535154","#6B4C9A","#922428","#9
 colbar<-c("#D35E60","#7293CB","#84BA5B","#E1974C","#808585","#9067A7","#AB6857","#CCC210")
 ggplot(plotdata3,aes(Ref_Date)) +
   geom_col(aes(y=GDPGrowth),fill=colbar[2],color=colbar[2]) +
-  geom_hline(aes(yintercept=0), colour="black", size=1) +
+  # geom_hline(aes(yintercept=0), colour="black", size=1) +
   geom_line(aes(y=index),size=2,color=col[1])+
   annotate('text',x=2013.5,y=-.0375,label="Actual GDP\nGrowth",
            fontface="bold",color=colbar[2])+
@@ -206,3 +206,7 @@ annual %>%
 summary(lm(GDPGrowth~index,data=annual))
 1.19*(1.117261-2*0.097661)
 1.19*(1.117261+2*0.097661)
+
+library(rmarkdown)
+render("README.Rmd",output_format = "md_document")
+
