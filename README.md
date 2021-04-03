@@ -14,8 +14,7 @@ file is run, manual entry of data may be required (for example, wells
 drilled). Third, “ECI.R” estimates the first principle component from
 this data and generates the visualization.
 
-The end result is:
+The latest ECI for Jan 2021 is -1.49. The full time series since Jan
+2002 is plotted below:
 
 ![Alberta ECI](plot.png)
-
-The latest ECI for Jan 2021 is -1.4895048.

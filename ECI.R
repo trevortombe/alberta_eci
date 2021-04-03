@@ -90,13 +90,14 @@ ggplot(plotdata,aes(Ref_Date,index,group=group,fill=group))+
   scale_fill_brewer(name="",palette="Set1")+
   mytheme+
   scale_y_continuous(expand=c(0,0),limit=c(-6,2))+
-  scale_x_continuous(expand=c(0,0),breaks=pretty_breaks(n=8),limit=c(NA,max(plotdata$Ref_Date)+2))+
-  annotate('text',x=max(plotdata$Ref_Date)+0.35,hjust=0,y=0.5,label="Above\nTrend",size=3)+
-  annotate('text',x=max(plotdata$Ref_Date)+0.35,hjust=0,y=-0.5,label="Below\nTrend",size=3)+
-  geom_segment(x=max(plotdata$Ref_Date)+0.3,xend=max(plotdata$Ref_Date)+0.3,
-               y=0.1,yend=0.5,arrow=arrow(length=unit(1,'mm')))+
-  geom_segment(x=max(plotdata$Ref_Date)+0.3,xend=max(plotdata$Ref_Date)+0.3,
-               y=-0.1,yend=-0.5,arrow=arrow(length=unit(1,'mm')))+
+  scale_x_continuous(expand=c(0,0),breaks=pretty_breaks(n=8),
+                     limit=c(NA,max(plotdata$Ref_Date)+4))+
+  annotate('text',x=max(plotdata$Ref_Date)+2,hjust=0,y=0.5,label="Above\nTrend",size=3)+
+  annotate('text',x=max(plotdata$Ref_Date)+2,hjust=0,y=-0.5,label="Below\nTrend",size=3)+
+  geom_segment(x=max(plotdata$Ref_Date)+1.5,xend=max(plotdata$Ref_Date)+1.5,
+               y=0.1,yend=0.75,arrow=arrow(length=unit(1,'mm')))+
+  geom_segment(x=max(plotdata$Ref_Date)+1.5,xend=max(plotdata$Ref_Date)+1.5,
+               y=-0.1,yend=-0.75,arrow=arrow(length=unit(1,'mm')))+
   geom_text(data=plotdata %>% filter(Ref_Date==max(Ref_Date),group=="Labour Markets"),
             aes(y=ABindex,label=paste("Latest:\n",round(ABindex,2))),hjust=-0.25,fontface='bold')+
   geom_point(data=plotdata %>% filter(Ref_Date==max(Ref_Date),group=="Labour Markets"),
