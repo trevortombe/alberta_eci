@@ -1,3 +1,10 @@
 title: Alberta Economic Conditions Index
+author: 
+  name: Trevor Tombe
+  email: ttombe@ucalgary.ca
 description: This page reports the latest Alberta ECI from Trevor Tombe (University of Calgary)
 theme: jekyll-theme-minimal
+
+social_links:
+  twitter: trevortombe
+  github: trevortombe
