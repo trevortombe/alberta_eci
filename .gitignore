@@ -5,4 +5,5 @@
 /*.csv
 !old_oil.csv
 !cfib.csv
+!ECI_Index_Data.csv
 /*.RData

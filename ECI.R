@@ -91,7 +91,7 @@ ggplot(plotdata,aes(Ref_Date,index,group=group,fill=group))+
   mytheme+
   scale_y_continuous(expand=c(0,0),limit=c(-6,2))+
   scale_x_continuous(expand=c(0,0),breaks=pretty_breaks(n=8),
-                     limit=c(NA,max(plotdata$Ref_Date)+4))+
+                     limit=c(NA,max(plotdata$Ref_Date)+3))+
   annotate('text',x=max(plotdata$Ref_Date)+2,hjust=0,y=0.5,label="Above\nTrend",size=3)+
   annotate('text',x=max(plotdata$Ref_Date)+2,hjust=0,y=-0.5,label="Below\nTrend",size=3)+
   geom_segment(x=max(plotdata$Ref_Date)+1.5,xend=max(plotdata$Ref_Date)+1.5,
@@ -110,37 +110,12 @@ The index is constructed to have mean zero and unit variance. A value of +1 mean
 It is the 1st principal component from 38 monthly data series. Based on the Chicago Fed National Activity Index.")
 ggsave("plot.png",width=8,height=4.5,dpi=200)
 
-ggplot(plotdata %>% filter(Ref_Date>=2012),aes(Ref_Date,index,group=group,fill=group))+
-  geom_col(position="stack",color="white",size=0.1,width=1/12)+
-  geom_line(aes(y=ABindex),size=1.5)+
-  geom_hline(yintercept=0,size=1,color="gray50")+
-  scale_fill_brewer(name="",palette="Set1")+
-  mytheme+
-  scale_y_continuous(expand=c(0,0),limit=c(NA,1.5),breaks = pretty_breaks(n=6))+
-  scale_x_continuous(expand=c(0,0),breaks=pretty_breaks(n=8),limit=c(NA,max(plotdata$Ref_Date)+1))+
-  annotate('text',x=max(plotdata$Ref_Date)+0.35,hjust=0,y=0.35,label="Above\nTrend",size=3)+
-  annotate('text',x=max(plotdata$Ref_Date)+0.35,hjust=0,y=-0.35,label="Below\nTrend",size=3)+
-  geom_segment(x=max(plotdata$Ref_Date)+0.3,xend=max(plotdata$Ref_Date)+0.3,
-               y=0.1,yend=0.5,arrow=arrow(length=unit(1,'mm')))+
-  geom_segment(x=max(plotdata$Ref_Date)+0.3,xend=max(plotdata$Ref_Date)+0.3,
-               y=-0.1,yend=-0.5,arrow=arrow(length=unit(1,'mm')))+
-  geom_text(data=plotdata %>% filter(Ref_Date==2019.4,group=="Labour Markets"),
-            aes(y=-1,label="A Second\nRecession?"),fontface="bold",color="firebrick")+
-  geom_text(data=plotdata %>% filter(Ref_Date==2014.5,group=="Labour Markets"),
-            aes(y=-1.5,label="The 2015/16\nRecession"),fontface="bold",color="firebrick")+
-  labs(y="Index of Economic Activity",
-       x="",title="A Monthly Index of Economic Conditions in Alberta",
-       subtitle="The index is constructed to have mean zero and unit variance. A value of +1 means YoY growth is 1 standard deviation above trend.",
-       caption="Sources: Own calculatons from 41 monthly data series from Statistics Canada, CFIB, and the AER. Graph by @trevortombe.")
-# ggsave("plot.png",width=7.5,height=4,dpi=200)
-
 # Aggregate by Year
 GDP<-fromJSON(paste(url,"GrossDomesticProduct",sep="")) %>%
   filter(Industries=="All industries" & Type=="Gross domestic product at basic prices") %>%
   select(When,gdp=Alberta)
 GDP<-ts(GDP$gdp,frequency=1,start=c(1997,1))
-
-plotdata2<-plotdata<-data.frame(Ref_Date=seq(as.yearmon("2002-01"),
+plotdata2<-data.frame(Ref_Date=seq(as.yearmon("2002-01"),
                                              length.out=length(ABindex),
                                              by=1/12)) %>%
   cbind(ABindex) %>%
@@ -154,7 +129,7 @@ plotdata2<-plotdata<-data.frame(Ref_Date=seq(as.yearmon("2002-01"),
   ) %>%
   mutate(GDPGrowth=ifelse(month(Ref_Date) %in% c(1,12),NA,GDPGrowth))
 
-# Adjust scale
+# Compare to Real GDP Growth Rates
 regresults<-lm(GDPGrowth~ABindex,data=plotdata2)
 coefficients(regresults)[1]
 coefficients(regresults)[2]
@@ -172,11 +147,6 @@ ggplot(plotdata3,aes(Ref_Date)) +
            fontface="bold",color=colbar[2])+
   annotate('text',x=2018,y=.0875,label="\"Alberta Economic\nConditions Index\"",
            fontface="bold",color=col[1],hjust=1)+
-  #geom_segment(x=2019,xend=2020,
-  #             y=(plotdata3 %>% filter(year==2019) %>% summarise(index=mean(index)))$index,
-  #             yend=(plotdata3 %>% filter(year==2019) %>% summarise(index=mean(index)))$index,size=1.5)+
-  #annotate('text',x=2021,y=-0.0125,label="2019 Avg: 1.2%",
-  #         hjust=1,size=3)+
   mytheme+
   scale_y_continuous(breaks = seq(-0.15,0.1,0.025),label=percent,
                      limit=c(NA,0.1))+
@@ -189,25 +159,13 @@ ggplot(plotdata3,aes(Ref_Date)) +
        caption="Sources: Own calculatons from 41 monthly data series from Statistics Canada, CFIB, and the AER. Graph by @trevortombe.")
 ggsave("GDPplot.png",width=8,height=4,dpi=200)
 
-annual<-plotdata3 %>% group_by(year) %>%
-  summarise(index=mean(index)) %>%
-  left_join(
-    data.frame(GDP) %>% 
-      mutate(GDP=as.numeric(GDP)) %>%
-      cbind(data.frame(year=seq(1997,2019,1))) %>% 
-      mutate(GDPGrowth=(GDP/lag(GDP,1)-1)),by="year"
-  ) %>%
-  drop_na()
-cor(annual$index,annual$GDPGrowth)
-annual %>%
-  select(year,index,GDPGrowth) %>%
-  gather(data,value,-year) %>%
-  ggplot(aes(year,value,group=data,fill=data))+
-  geom_col(position='dodge')
-summary(lm(GDPGrowth~index,data=annual))
-1.19*(1.117261-2*0.097661)
-1.19*(1.117261+2*0.097661)
-
+# Creates an update to the README page on GitHub
 library(rmarkdown)
 render("README.Rmd",output_format = "md_document")
 
+# Save the Index as a CSV file
+table<-plotdata %>%
+  spread(group,index) %>%
+  rename(`Alberta Economic Conditions Index`=ABindex,
+         Date=Ref_Date)
+write.csv(table,file="ECI_Index_Data.csv",row.names = F)
