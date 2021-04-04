@@ -5,6 +5,7 @@ author:
 description: This page reports the latest Alberta ECI from Trevor Tombe (University of Calgary)
 theme: minima
 
-social_links:
-  twitter: trevortombe
-  github: trevortombe
+minima:
+  social_links:
+    twitter: trevortombe
+    github: trevortombe
