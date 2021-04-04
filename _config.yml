@@ -12,5 +12,5 @@ minima:
     twitter: trevortombe
     github: trevortombe
   
-  header_pages:
-    - about.md
+  #header_pages:
+  #  - about.md
