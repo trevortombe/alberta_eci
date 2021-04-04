@@ -2,8 +2,6 @@ The following compiles monthly data from a variety of courses to estimate real-t
 
 > You can download a CSV file of the montly index values [here](https://github.com/trevortombe/alberta_eci/raw/master/ECI_Index_Data.csv). 
 
----
-
 ![](https://raw.githubusercontent.com/trevortombe/alberta_eci/master/plot.png)
 
 The Alberta ECI provides a strong indication of overall economic conditions. At an annual frequency, it is highly correlated with measured changes in Alberta's real GDP.
