@@ -1,31 +1,16 @@
 rm(list=ls(all=TRUE)) # wipes previous workspace
 
-# Packages used by this code
-#install.packages(c("ggplot2","scales","RColorBrewer","ggthemes","tidyverse","devtools",
-#                   "testit","ggrepel","jsonlite","data.table","ggalt","zoo","seasonal",
-#                   "gridExtra","ggridges","ggpubr","ggseas","readxl","gghighlight"))
-library(zoo)
-library(ggplot2)
-library(scales)
-library(RColorBrewer)
-library(ggthemes)
-library(tidyverse)
-library(ggrepel)
-#library(Quandl)
-library(jsonlite)
-library(data.table)
-library(ggalt)
-library(gridExtra)
-library(ggridges)
-library(ggpubr)
-library(testit)
-library(ggseas) # if causes problems, ensure Rtools is installed prior to installing "seasonal"
-library(readxl)
-library(grid)
-library(gghighlight)
-
-#library(plyr)
-#library(colortools)
+# Common Packages
+packages<-c("curl","scales","zoo","tidyverse",
+            "ggseas","ggplot2","ggthemes","jsonlite",
+            "data.table","rmarkdown")
+check.packages <- function(pkg){
+  new.pkg <- pkg[!(pkg %in% installed.packages()[, "Package"])]
+  if (length(new.pkg)) 
+    install.packages(new.pkg)
+  sapply(pkg, require, character.only = TRUE)
+}
+check.packages(packages)
 
 # For the new StatCan Data Tables
 getTABLE<-function(x) {
@@ -355,21 +340,3 @@ getseas<-function(df,g){
     ungroup()
   return(temp)
 }
-
-
-########
-# GIFs #
-########
-#install.packages("magick")
-#install.packages("installr")
-#require(installr)
-#install.packages("animation")
-#install.ImageMagick()
-#install.packages("gganimate")
-
-#library(animation)
-#library(gganimate)
-
-#magickPath <- shortPathName("D:\\Program Files\\ImageMagick-7.0.7-Q16\\magick.exe")
-#ani.options(convert=magickPath)
-
