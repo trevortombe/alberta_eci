@@ -15,6 +15,22 @@ check.packages <- function(pkg){
 }
 check.packages(packages)
 
+# Useful lists
+provinces<-c("Canada","Newfoundland and Labrador","Prince Edward Island","Nova Scotia",
+             "New Brunswick","Quebec","Ontario","Manitoba","Saskatchewan",
+             "Alberta","British Columbia","Yukon","Northwest Territories","Nunavut")
+tenprov<-c("Newfoundland and Labrador","Prince Edward Island","Nova Scotia",
+           "New Brunswick","Quebec","Ontario","Manitoba","Saskatchewan",
+           "Alberta","British Columbia")
+provinces2<-c("CAN","NL","PE","NS",
+              "NB","QC","ON","MB","SK",
+              "AB","BC","YT","NT","NU")
+provsort<-c("BC","AB","SK","MB","ON","QC","NB","NS","PE","NL")
+provnames<-data.frame(GEO=provinces,short=provinces2)
+provnames$short <- factor(provnames$short, levels = c("CAN","BC","AB","SK","MB","ON","QC","NB","NS","PE","NL","YT","NT","NU")) # Lock in factor level order
+provorder<-tibble(GEO=c("BC","AB","SK","MB","ON","QC","NB","NS","PE","NL"),
+                  order=as.numeric(seq(1,10)))
+
 # For the new StatCan Data Tables
 getTABLE<-function(x) {
   url<-paste0("https://www150.statcan.gc.ca/n1/tbl/csv/",x,"-eng.zip")
