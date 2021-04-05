@@ -244,6 +244,7 @@ ggplot(plotdata3,aes(Ref_Date)) +
 ggsave("GDPplot.png",width=8,height=4,dpi=200)
 
 # Creates an update to the README page on GitHub
+updated<-.POSIXct(Sys.time(), "America/Denver")
 render("README.Rmd",output_format = "md_document")
 
 # Save the Index as a CSV file
