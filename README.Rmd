@@ -19,3 +19,6 @@ The latest ECI for `r plotdata[dim(plotdata)[1],1]` is `r round(plotdata[dim(plo
 
 ![Alberta ECI](plot.png)
 
+---
+
+The index was last updated on `r updated` MDT.
