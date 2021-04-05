@@ -253,11 +253,11 @@ GDP<-fromJSON(paste(url,"GrossDomesticProduct",sep="")) %>%
   filter(Industries=="All industries" & Type=="Gross domestic product at basic prices") %>%
   select(When,gdp=Alberta)
 GDP<-ts(GDP$gdp,frequency=1,start=c(1997,1))
-
-# CFIB Business Barometer -- update manually from their website
-cfib<-read.csv("cfib.csv") %>%
-  mutate(When=as.yearmon(Date,"%d/%m/%Y")) %>%
-  select(When,cfib=Alberta)
+# 
+# # CFIB Business Barometer -- update manually from their website
+# cfib<-read.csv("cfib.csv") %>%
+#   mutate(When=as.yearmon(Date,"%d/%m/%Y")) %>%
+#   select(When,cfib=Alberta)
 
 # EI claims
 EIdata<-getTABLE("14100005")
