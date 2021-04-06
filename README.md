@@ -18,3 +18,7 @@ The latest ECI for Jan 2021 is -1.54. The full time series since Jan
 2002 is plotted below:
 
 ![Alberta ECI](plot.png)
+
+------------------------------------------------------------------------
+
+The index was last updated on 2021-04-06 09:04:34 MDT.
