@@ -235,9 +235,9 @@ ggplot(plotdata3,aes(Ref_Date)) +
   mytheme+
   scale_y_continuous(breaks = seq(-0.15,0.1,0.025),label=percent,
                      limit=c(NA,0.1))+
-  scale_x_continuous(limit=c(2002,2021),expand=c(0,0),
-                     breaks=seq(2002.5,2020.75,2),
-                     labels=seq(2002,2020,2))+
+  scale_x_continuous(expand=c(0,0),
+                     breaks=seq(2002.5,2021.75,2),
+                     labels=seq(2002,2021,2))+
   labs(x="",y="Year-over-Year Change (%)",
        title=paste("Index of Alberta's Monthly Economic Conditions, Jan 2002 to",today),
        subtitle="The index is constructed to have mean zero and unit variance. It is then rescale to best fit actual GDP growth.",
