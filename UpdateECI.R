@@ -98,7 +98,7 @@ source("ECI_data.R")
 egy_vars=c("oil","rigs","oilprice","exports_energy","wells")
 biz_vars=c("mfg","durable","nondurable","mfgchem","mfgmetal","mfgfood","mfgmachinery","mfgpetro","trade","exports_nonenergy","self_emp")
 lab_vars=c("employment_rate","employment","unemployment","unemp_men_prime","unemp_women_prime","unemp_duration","SEPH","SEPHprivate","SEPHgoods","SEPHservices","SEPHconstruct","hours","full_part_emp","under_unemp","private_emp","partrate")
-con_vars=c("housing","earnings","retail","restaurant_spend","MLS") # removed during pandemic: ,"vehicles","trucks"
+con_vars=c("housing","earnings","retail","restaurant_spend","MLS","vehicles","trucks")
 
 # Form Matrix of Main Data
 variables<-c(egy_vars,biz_vars,lab_vars,con_vars)
