@@ -21,4 +21,4 @@ The latest ECI for Feb 2021 is -1.15. The full time series since Jan
 
 ------------------------------------------------------------------------
 
-The index was last updated on 2021-05-03 10:21:22 MDT.
+The index was last updated on 2021-05-03 16:00:34 MDT.
