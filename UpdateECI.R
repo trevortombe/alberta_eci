@@ -209,7 +209,9 @@ plotdata2<-data.frame(Ref_Date=seq(as.yearmon("2002-01"),
     data.frame(GDP) %>% 
       mutate(GDP=as.numeric(GDP)) %>%
       cbind(data.frame(year=seq(1997,2019,1))) %>% 
-      mutate(GDPGrowth=(GDP/lag(GDP,1)-1)),by="year"
+      mutate(GDPGrowth=(GDP/lag(GDP,1)-1)) %>%
+      select(year,GDPGrowth) %>%
+      rbind(data.frame(year=2020,GDPGrowth=(-0.082))),by="year"
   ) %>%
   mutate(GDPGrowth=ifelse(month(Ref_Date) %in% c(1,12),NA,GDPGrowth))
 
