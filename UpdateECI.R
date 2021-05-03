@@ -94,8 +94,8 @@ source("ECI_data.R")
 # Compile the Data #
 ####################
 
-# Define groups of variables (include wells or not)
-egy_vars=c("oil","rigs","oilprice","exports_energy","wells")
+# Define groups of variables (include wells or not, it's a long delayed variable sometimes)
+egy_vars=c("oil","rigs","oilprice","exports_energy") # ,"wells"
 biz_vars=c("mfg","durable","nondurable","mfgchem","mfgmetal","mfgfood","mfgmachinery","mfgpetro","trade","exports_nonenergy","self_emp")
 lab_vars=c("employment_rate","employment","unemployment","unemp_men_prime","unemp_women_prime","unemp_duration","SEPH","SEPHprivate","SEPHgoods","SEPHservices","SEPHconstruct","hours","full_part_emp","under_unemp","private_emp","partrate")
 con_vars=c("housing","earnings","retail","restaurant_spend","MLS","vehicles","trucks")
