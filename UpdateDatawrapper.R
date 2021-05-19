@@ -1,5 +1,5 @@
 
-packages<-c("curl","scales","zoo","DatawRappr")
+packages<-c("curl","scales","zoo","devtools")
 check.packages <- function(pkg){
   new.pkg <- pkg[!(pkg %in% installed.packages()[, "Package"])]
   if (length(new.pkg)) 
@@ -7,6 +7,7 @@ check.packages <- function(pkg){
   sapply(pkg, require, character.only = TRUE)
 }
 check.packages(packages)
+devtools::install_github("munichrocker/DatawRappr")
 
 # Authorize API Access to Datawrapper
 datawrapper_auth(api_key = Sys.getenv("DATAWRAPPERAUTH"))
