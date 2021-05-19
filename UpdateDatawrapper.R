@@ -6,6 +6,7 @@ check.packages <- function(pkg){
     install.packages(new.pkg)
   sapply(pkg, require, character.only = TRUE)
 }
+check.packages(packages)
 
 # Authorize API Access to Datawrapper
 datawrapper_auth(api_key = Sys.getenv("DATAWRAPPERAUTH"))
