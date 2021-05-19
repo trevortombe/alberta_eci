@@ -1,0 +1,13 @@
+name: update_datawrapper
+on:
+  workflow_dispatch:
+jobs:
+  build:
+    runs-on: windows-latest
+    env:
+      DATAWRAPPERAUTH: ${{ secrets.DATAWRAPPERAUTH }}
+    steps:
+      - uses: actions/checkout@v2
+      - uses: r-lib/actions/setup-r@master
+      - name: Run R script
+        run: Rscript UpdateDatawrapper.R
