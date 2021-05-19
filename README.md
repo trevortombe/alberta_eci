@@ -17,9 +17,6 @@ this data and generates the visualization.
 The latest ECI for Feb 2021 is -1.15. The full time series since Jan
 2002 is plotted below:
 
-<iframe title="Alberta Economic Conditions Index to Feb 2021" aria-label="Interactive area chart" id="datawrapper-chart-fIIKi" src="https://datawrapper.dwcdn.net/fIIKi/5/" scrolling="no" frameborder="0" style="width: 0; min-width: 100% !important; border: none;" height="500"></iframe><script type="text/javascript">!function(){"use strict";window.addEventListener("message",(function(a){if(void 0!==a.data["datawrapper-height"])for(var e in a.data["datawrapper-height"]){var t=document.getElementById("datawrapper-chart-"+e)||document.querySelector("iframe[src*='"+e+"']");t&&(t.style.height=a.data["datawrapper-height"][e]+"px")}}))}();
-</script>
-
 ![Alberta ECI](plot.png)
 
 ------------------------------------------------------------------------
