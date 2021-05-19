@@ -10,6 +10,7 @@ check.packages(packages)
 devtools::install_github("munichrocker/DatawRappr")
 
 # Authorize API Access to Datawrapper
+require(DatawRappr)
 datawrapper_auth(api_key = Sys.getenv("DATAWRAPPERAUTH"))
 
 # The plot ID of the datawrapper
