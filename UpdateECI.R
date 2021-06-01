@@ -10,7 +10,7 @@ packages<-c("curl","scales","zoo","tidyverse",
 check.packages <- function(pkg){
   new.pkg <- pkg[!(pkg %in% installed.packages()[, "Package"])]
   if (length(new.pkg)) 
-    install.packages(new.pkg)
+    install.packages(new.pkg,type="binary")
   sapply(pkg, require, character.only = TRUE)
 }
 check.packages(packages)
