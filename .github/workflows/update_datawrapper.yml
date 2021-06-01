@@ -2,6 +2,8 @@ name: update_datawrapper
 on:
   workflow_run:
     workflows: ["UpdateECI"]
+    types:
+      - completed
   workflow_dispatch:
 jobs:
   build:
