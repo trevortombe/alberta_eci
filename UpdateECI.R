@@ -254,3 +254,99 @@ table<-plotdata %>%
   rename(`Alberta Economic Conditions Index`=ABindex,
          Date=Ref_Date)
 write.csv(table,file="ECI_Index_Data.csv",row.names = F)
+
+# Level Index, Initial Values Correspond to 2002 monthly labour compensation levels relative to the 2001 average
+labdata<-getTABLE("36100205")
+labdata_ab<-labdata %>%
+  filter(GEO=="Alberta" & Seasonal.adjustment=="Seasonally adjusted" &
+           Sector=="Compensation of employees" & Ref_Date>="Jan 2001" & Ref_Date<="Dec 2001") %>%
+  mutate(relative=Value/mean(Value)) %>%
+  select(Ref_Date,index=relative)
+labdata_ab<-labdata_ab %>%
+  mutate(index=1) %>%
+  rbind(plotdata3 %>% select(Ref_Date,index) %>% filter(year(Ref_Date)==2002)) %>%
+  mutate(index=ifelse(year(Ref_Date)==2002,lag(index,12)*(1+index),index))
+for (y in seq(2003,2021)){
+  labdata_ab<-labdata_ab %>%
+    rbind(plotdata3 %>% select(Ref_Date,index) %>% filter(year(Ref_Date)==y)) %>%
+    mutate(index=ifelse(year(Ref_Date)==y,lag(index,12)*(1+index),index))
+}
+
+p<-ggsdc(labdata_ab, aes(x = Ref_Date, y = index), method = "seas") + geom_line()
+plotdata4<-p$data %>%
+  filter(component=="trend" | component=="irregular") %>%
+  group_by(x) %>%
+  summarise(index=sum(y)) %>%
+  select(Ref_Date=x,index)
+ggplot(plotdata4,aes(Ref_Date,index))+
+  geom_line(size=2,color=col[1])
+
+GDP<-fromJSON(paste(url,"GrossDomesticProduct",sep="")) %>%
+  filter(Industries=="All industries" & Type=="Gross domestic product at basic prices") %>%
+  select(When,gdp=Alberta)
+GDP<-ts(GDP$gdp,frequency=1,start=c(1997,1))
+plotdata5<-data.frame(Ref_Date=seq(as.yearmon("2001-01"),
+                                   length.out=length(labdata_ab$index),
+                                   by=1/12)) %>%
+  cbind(plotdata4 %>% select(index)) %>%
+  filter(Ref_Date>="Jan 2001") %>%
+  mutate(year=year(Ref_Date)) %>%
+  left_join(
+    data.frame(GDP) %>% 
+      mutate(GDP=as.numeric(GDP)) %>%
+      cbind(data.frame(year=seq(1997,2020,1))) %>% 
+      mutate(GDPGrowth=(GDP/lag(GDP,1)-1)) %>%
+      select(year,GDPGrowth,GDP),by="year"
+  ) %>%
+  mutate(relGDP=GDP/GDP[1])
+
+# Compare to Real GDP Growth Rates
+regresults<-lm(relGDP~index,data=plotdata5)
+summary(regresults)
+plotdata6<-plotdata5 %>%
+  mutate(index2=coefficients(regresults)[2]*index+coefficients(regresults)[1]) %>%
+  left_join(
+    labdata %>%
+      filter(GEO=="Alberta" & Seasonal.adjustment=="Seasonally adjusted" &
+               Sector=="Compensation of employees" & Ref_Date>="Jan 2001") %>%
+      mutate(relative=Value/mean(Value)) %>%
+      select(Ref_Date,labcomp=relative),
+    by="Ref_Date"
+  ) %>%
+  left_join(
+    LFS %>%
+      filter(Labour.force.characteristics=="Population",GEO=="Alberta",
+             Sex=="Both sexes",Age.group=="15 years and over",
+             Statistics=="Estimate",Data.type=="Seasonally adjusted") %>%
+      select(Ref_Date,emp=Value),
+    by="Ref_Date"
+  ) %>%
+  mutate(rel_labcomp=labcomp/labcomp[1],
+         cpi=deflate[1:nrow(plotdata5)],
+         rel_labcomp_real=rel_labcomp*(cpi[1]/cpi),
+         rel_labcomp_real_pc=rel_labcomp_real*emp[1]/emp)
+ggplot(plotdata6,aes(Ref_Date,relGDP))+geom_line()+
+  geom_line(aes(y=index,color='test'))+
+  geom_line(aes(y=rel_labcomp_real,color='labour comp'))+
+  geom_line(aes(y=rel_labcomp_real_pc,color='labour comp per worker'))
+
+table2<-plotdata6
+write.csv(table2,file="ECI_Index_Data2.csv",row.names = F)
+
+temp<-plotdata6 %>% filter(Ref_Date>="Jan 2001") %>%
+  mutate(rel_labcomp_real_pc=rel_labcomp_real_pc/rel_labcomp_real_pc[1])
+ggplot(temp,aes(Ref_Date,100*rel_labcomp_real_pc))+
+  geom_hline(yintercept=100,size=1)+
+  geom_line(size=2,color=col[1])+
+  geom_segment(x=2004.75,xend=2021+2/12,y=103.10050,yend=103.10050,color=col[2],size=1,linetype='dashed')+
+  geom_point(data=filter(temp,Ref_Date==max(Ref_Date)),size=2.5,stroke=2.5,
+             color=col[1],shape=21,fill='white')+
+  mytheme+
+  scale_y_continuous("Index Value (January 2001 = 100)")+
+  scale_x_continuous(breaks=seq(2001,2021,5))+
+  labs(x="",
+       caption="Graph by @trevortombe",
+       subtitle = "Note: Displays total compensation to workers in Alberta relative to the population aged 15 and over.
+Source: Own calculations from Statistics Canada data tables 36-10-0205, 18-10-0004, and 14-10-0287.",
+       title="Total Labour Compensation per Person 15+ in Alberta (Inflation Adjusted)")
+ggsave('EarningsPlot.png',width = 7,height=3.5)

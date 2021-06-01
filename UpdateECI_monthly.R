@@ -135,14 +135,14 @@ change[,"hours"]<-ABdata[2:nrows,"hours"]-ABdata[1:(nrows-1),"hours"]
 change<-ts(change,frequency=12,start=c(2002,1))
 
 # Estimate the first principle component
-scaled_data<-scale(change,center=T,scale=T)
-PCAtest<-prcomp(change,center=T,scale=T)
+scaled_data<-scale(change,scale=T)
+PCAtest<-prcomp(change,scale=T)
 print(PCAtest)
 summary(PCAtest)
 predicted<-predict(PCAtest,newdata=change) # extracts the first principle component
 weights<-as.numeric(PCAtest$rotation[,1])/sum(as.numeric(PCAtest$rotation[,1]))
-temp<-scale(change,center=T,scale=T) %*% weights # extracts the first principle component
-ABindex<-temp # Rescale to give unit variance
+temp<-scale(change,scale=T) %*% weights # extracts the first principle component
+ABindex<-temp/sd(temp) # Rescale to give unit variance
 
 #####################################
 # Plot the Index and Its Components #
@@ -157,10 +157,10 @@ group_lab<-scaled_data[,(1+n2):n3] %*% weights[(1+n2):n3] # extracts the first p
 group_HHs<-scaled_data[,(1+n3):n4] %*% weights[(1+n3):n4] # extracts the first principle component
 plotdata<-data.frame(Ref_Date=seq(as.yearmon("2001-02"),length.out=length(ABindex),by=1/12)) %>%
   cbind(ABindex) %>%
-  cbind(Energy=group_oil) %>%
-  cbind(Business=group_biz) %>%
-  cbind(Labour=group_lab) %>%
-  cbind(Households=group_HHs) %>%
+  cbind(Energy=group_oil/sd(temp)) %>%
+  cbind(Business=group_biz/sd(temp)) %>%
+  cbind(Labour=group_lab/sd(temp)) %>%
+  cbind(Households=group_HHs/sd(temp)) %>%
   gather(group,index,-Ref_Date,-ABindex) %>%
   mutate(group=ifelse(group=="Labour","Labour Markets",group),
          group=ifelse(group=="Energy","Energy Sector",group),
@@ -219,9 +219,9 @@ plotdata2<-data.frame(Ref_Date=seq(as.yearmon("2001-02"),
   mutate(GDPGrowth=ifelse(month(Ref_Date) %in% c(1,12),NA,GDPGrowth))
 
 # Compare to Real GDP Growth Rates
-regresults<-lm(log(GDP)~index,data=plotdata2)
+regresults<-lm(GDP~index,data=plotdata2)
 coefficients(regresults)[1]
 coefficients(regresults)[2]
 plotdata3<-plotdata2 %>%
   mutate(index2=coefficients(regresults)[2]*index+coefficients(regresults)[1])
-ggplot(plotdata3,aes(Ref_Date,log(GDP)))+geom_line()+geom_line(aes(y=index2,color='test'))
+ggplot(plotdata3,aes(Ref_Date,GDP))+geom_line()+geom_line(aes(y=index2,color='test'))
