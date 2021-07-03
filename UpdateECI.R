@@ -173,7 +173,7 @@ ggplot(plotdata,aes(Ref_Date,index,group=group,fill=group))+
   geom_hline(yintercept=0,size=1,color="gray50")+
   scale_fill_brewer(name="",palette="Set1")+
   mytheme+
-  scale_y_continuous(expand=c(0,0),limit=c(-6,2))+
+  scale_y_continuous(expand=c(0,0),limit=c(-6,NA))+
   scale_x_continuous(expand=c(0,0),breaks=pretty_breaks(n=8),
                      limit=c(NA,max(plotdata$Ref_Date)+4))+
   annotate('text',x=max(plotdata$Ref_Date)+3,hjust=0,y=0.5,label="Above\nTrend",size=3)+
@@ -233,8 +233,7 @@ ggplot(plotdata3,aes(Ref_Date)) +
   annotate('text',x=2018,y=.0875,label="\"Alberta Economic\nConditions Index\"",
            fontface="bold",color=col[1],hjust=1)+
   mytheme+
-  scale_y_continuous(breaks = seq(-0.15,0.1,0.025),label=percent,
-                     limit=c(NA,0.1))+
+  scale_y_continuous(breaks = seq(-0.15,0.1,0.025),label=percent)+
   scale_x_continuous(expand=c(0,0),
                      breaks=seq(2002.5,2021.75,2),
                      labels=seq(2002,2021,2))+
