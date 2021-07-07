@@ -173,7 +173,7 @@ ggplot(plotdata,aes(Ref_Date,index,group=group,fill=group))+
   geom_hline(yintercept=0,size=1,color="gray50")+
   scale_fill_brewer(name="",palette="Set1")+
   mytheme+
-  scale_y_continuous(expand=c(0,0),limit=c(-6,NA))+
+  scale_y_continuous(limit=c(-6,NA))+
   scale_x_continuous(expand=c(0,0),breaks=pretty_breaks(n=8),
                      limit=c(NA,max(plotdata$Ref_Date)+4))+
   annotate('text',x=max(plotdata$Ref_Date)+3,hjust=0,y=0.5,label="Above\nTrend",size=3)+
