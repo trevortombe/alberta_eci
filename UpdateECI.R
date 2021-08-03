@@ -176,12 +176,12 @@ ggplot(plotdata,aes(Ref_Date,index,group=group,fill=group))+
   scale_y_continuous(limit=c(-6,NA))+
   scale_x_continuous(expand=c(0,0),breaks=pretty_breaks(n=8),
                      limit=c(NA,max(plotdata$Ref_Date)+4))+
-  annotate('text',x=max(plotdata$Ref_Date)+3,hjust=0,y=0.5,label="Above\nTrend",size=3)+
-  annotate('text',x=max(plotdata$Ref_Date)+3,hjust=0,y=-0.5,label="Below\nTrend",size=3)+
+  annotate('text',x=max(plotdata$Ref_Date)+3,hjust=0,y=1,label="Above\nTrend",size=3)+
+  annotate('text',x=max(plotdata$Ref_Date)+3,hjust=0,y=-1,label="Below\nTrend",size=3)+
   geom_segment(x=max(plotdata$Ref_Date)+2.5,xend=max(plotdata$Ref_Date)+2.5,
-               y=0.1,yend=0.75,arrow=arrow(length=unit(1,'mm')))+
+               y=0.1,yend=1.1,arrow=arrow(length=unit(1,'mm')))+
   geom_segment(x=max(plotdata$Ref_Date)+2.5,xend=max(plotdata$Ref_Date)+2.5,
-               y=-0.1,yend=-0.75,arrow=arrow(length=unit(1,'mm')))+
+               y=-0.1,yend=-1.1,arrow=arrow(length=unit(1,'mm')))+
   geom_text(data=plotdata %>% filter(Ref_Date==max(Ref_Date),group=="Labour Markets"),
             aes(y=ABindex,label=paste("Latest:\n",round(ABindex,2))),hjust=-0.25,fontface='bold')+
   geom_point(data=plotdata %>% filter(Ref_Date==max(Ref_Date),group=="Labour Markets"),
@@ -233,7 +233,7 @@ ggplot(plotdata3,aes(Ref_Date)) +
   annotate('text',x=2018,y=.0875,label="\"Alberta Economic\nConditions Index\"",
            fontface="bold",color=col[1],hjust=1)+
   mytheme+
-  scale_y_continuous(breaks = seq(-0.15,0.1,0.025),label=percent)+
+  scale_y_continuous(breaks = pretty_breaks(8),label=percent)+
   scale_x_continuous(expand=c(0,0),
                      breaks=seq(2002.5,2021.75,2),
                      labels=seq(2002,2021,2))+
