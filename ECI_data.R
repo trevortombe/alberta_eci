@@ -1,6 +1,3 @@
-# Load Useful Packages, Functions and Themes
-# source("core.R")
-
 ########################
 # Gather the core data #
 ########################
