@@ -14,11 +14,11 @@ file is run, manual entry of data may be required (for example, wells
 drilled). Third, “ECI.R” estimates the first principle component from
 this data and generates the visualization.
 
-The latest ECI for Jul 2021 is 1.84. The full time series since Jan 2002
+The latest ECI for Aug 2021 is 1.8. The full time series since Jan 2002
 is plotted below:
 
 ![Alberta ECI](plot.png)
 
 ------------------------------------------------------------------------
 
-The index was last updated on 2021-10-01 08:51:50 MDT.
+The index was last updated on 2021-11-01 08:52:45 MDT.
