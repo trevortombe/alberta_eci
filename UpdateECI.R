@@ -4,7 +4,7 @@ rm(list=ls(all=TRUE)) # wipes previous workspace
 # Setup the R Environment #
 ###########################
 # Common Packages
-packages<-c("curl","scales","zoo","tidyverse",
+packages<-c("curl","scales","zoo","tidyverse","tempdisagg",
             "ggseas","ggplot2","ggthemes","jsonlite",
             "data.table","rmarkdown","testit")
 check.packages <- function(pkg){
@@ -95,10 +95,20 @@ source("ECI_data.R")
 ####################
 
 # Define groups of variables (include wells or not, it's a long delayed variable sometimes)
-egy_vars=c("oil","rigs","oilprice","exports_energy") # ,"wells"
-biz_vars=c("mfg","durable","nondurable","mfgchem","mfgmetal","mfgfood","mfgmachinery","mfgpetro","trade","exports_nonenergy","self_emp")
-lab_vars=c("employment_rate","employment","unemployment","unemp_men_prime","unemp_women_prime","unemp_duration","SEPH","SEPHprivate","SEPHgoods","SEPHservices","SEPHconstruct","hours","full_part_emp","under_unemp","private_emp","partrate")
-con_vars=c("housing","earnings","retail","restaurant_spend","MLS","vehicles","trucks")
+egy_vars=c("oil","rigs","exports_energy") # ,"wells"
+biz_vars=c("mfg","durable","nondurable","mfgchem","mfgmetal","mfgfood",
+           "mfgmachinery","mfgpetro","trade","exports_nonenergy","self_emp")
+lab_vars=c("employment_rate","employment","unemployment","unemp_men_prime",
+           "unemp_women_prime","unemp_duration","SEPH","SEPHprivate","SEPHgoods",
+           "SEPHservices","SEPHconstruct","hours","full_part_emp","under_unemp",
+           "private_emp","partrate")
+con_vars=c("housing","earnings","retail","vehicles","trucks")
+
+# Smaller Set
+egy_vars=c("oil","rigs")
+biz_vars=c("mfg","trade")
+lab_vars=c("employment","hours","full_part_emp")
+con_vars=c("earnings","retail","housing","vehicles")
 
 # Form Matrix of Main Data
 variables<-c(egy_vars,biz_vars,lab_vars,con_vars)
@@ -109,11 +119,16 @@ for (v in variables){
 }
 ABdata<-ABdata %>%
   filter(When>="Jan 2001") %>%
+  drop_na() %>%
   ts(frequency=12,start=c(2001,01))
 
 # Convert nominal variables to real
-for (v in c("mfg","trade","earnings","retail","durables","nondurables","restaurant_spend",
-            "mfgchem","mfgmetal","mfgfood","mfgmachinery","mfgpetro","mls","exports_energy","exports_nonenergy")){
+# for (v in c("mfg","trade","earnings","retail","durables","nondurables",
+#             "mfgchem","mfgmetal","mfgfood","mfgmachinery","mfgpetro",
+#             "exports_energy","exports_nonenergy")){
+#   ABdata[,v]<-ABdata[,v]/deflate
+# }
+for (v in c("mfg","trade","earnings","retail")){
   ABdata[,v]<-ABdata[,v]/deflate
 }
 
@@ -123,14 +138,14 @@ ncols<-dim(ABdata)[2]
 change=log(ABdata[13:nrows,2:ncols])-log(ABdata[1:(nrows-12),2:ncols]) # Year-over-year changes
 nvars<-dim(change)[2]
 # change[,"cfib"]<-ABdata[13:nrows,"cfib"]-ABdata[1:(nrows-12),"cfib"]
-change[,"unemployment"]<-ABdata[13:nrows,"unemployment"]-ABdata[1:(nrows-12),"unemployment"]
-change[,"fulltime_share"]<-ABdata[13:nrows,"fulltime_share"]-ABdata[1:(nrows-12),"fulltime_share"]
-change[,"partrate"]<-ABdata[13:nrows,"partrate"]-ABdata[1:(nrows-12),"partrate"]
-change[,"under_unemp"]<-ABdata[13:nrows,"under_unemp"]-ABdata[1:(nrows-12),"under_unemp"]
-change[,"employment_rate"]<-ABdata[13:nrows,"employment_rate"]-ABdata[1:(nrows-12),"employment_rate"]
-change[,"unemp_men_prime"]<-ABdata[13:nrows,"unemp_men_prime"]-ABdata[1:(nrows-12),"unemp_men_prime"]
-change[,"unemp_women_prime"]<-ABdata[13:nrows,"unemp_women_prime"]-ABdata[1:(nrows-12),"unemp_women_prime"]
-change[,"hours"]<-ABdata[13:nrows,"hours"]-ABdata[1:(nrows-12),"hours"]
+# change[,"unemployment"]<-ABdata[13:nrows,"unemployment"]-ABdata[1:(nrows-12),"unemployment"]
+# change[,"fulltime_share"]<-ABdata[13:nrows,"fulltime_share"]-ABdata[1:(nrows-12),"fulltime_share"]
+# change[,"partrate"]<-ABdata[13:nrows,"partrate"]-ABdata[1:(nrows-12),"partrate"]
+# change[,"under_unemp"]<-ABdata[13:nrows,"under_unemp"]-ABdata[1:(nrows-12),"under_unemp"]
+# change[,"employment_rate"]<-ABdata[13:nrows,"employment_rate"]-ABdata[1:(nrows-12),"employment_rate"]
+# change[,"unemp_men_prime"]<-ABdata[13:nrows,"unemp_men_prime"]-ABdata[1:(nrows-12),"unemp_men_prime"]
+# change[,"unemp_women_prime"]<-ABdata[13:nrows,"unemp_women_prime"]-ABdata[1:(nrows-12),"unemp_women_prime"]
+# change[,"hours"]<-ABdata[13:nrows,"hours"]-ABdata[1:(nrows-12),"hours"]
 
 # Convert to time-series object
 change<-ts(change,frequency=12,start=c(2002,1))
@@ -196,7 +211,8 @@ ggsave("plot.png",width=8,height=4.5,dpi=200)
 
 # Aggregate by Year
 GDP<-fromJSON(paste(url,"GrossDomesticProduct",sep="")) %>%
-  filter(Industries=="All industries" & Type=="Gross domestic product at basic prices") %>%
+  filter(Type=="Gross domestic product at market prices",
+         When>=1997) %>%
   select(When,gdp=Alberta)
 GDP<-ts(GDP$gdp,frequency=1,start=c(1997,1))
 plotdata2<-data.frame(Ref_Date=seq(as.yearmon("2002-01"),
@@ -208,9 +224,9 @@ plotdata2<-data.frame(Ref_Date=seq(as.yearmon("2002-01"),
   left_join(
     data.frame(GDP) %>% 
       mutate(GDP=as.numeric(GDP)) %>%
-      cbind(data.frame(year=seq(1997,2020,1))) %>% 
+      cbind(data.frame(year=seq(1997,1997+length(GDP)-1,1))) %>% 
       mutate(GDPGrowth=(GDP/lag(GDP,1)-1)) %>%
-      select(year,GDPGrowth),by="year"
+      select(year,GDPGrowth,GDP),by="year"
   ) %>%
   mutate(GDPGrowth=ifelse(month(Ref_Date) %in% c(1,12),NA,GDPGrowth))
 
@@ -265,12 +281,11 @@ labdata_ab<-labdata_ab %>%
   mutate(index=1) %>%
   rbind(plotdata3 %>% select(Ref_Date,index) %>% filter(year(Ref_Date)==2002)) %>%
   mutate(index=ifelse(year(Ref_Date)==2002,lag(index,12)*(1+index),index))
-for (y in seq(2003,2021)){
+for (y in seq(2003,year(max(plotdata3$Ref_Date)))){
   labdata_ab<-labdata_ab %>%
     rbind(plotdata3 %>% select(Ref_Date,index) %>% filter(year(Ref_Date)==y)) %>%
     mutate(index=ifelse(year(Ref_Date)==y,lag(index,12)*(1+index),index))
 }
-
 p<-ggsdc(labdata_ab, aes(x = Ref_Date, y = index), method = "seas") + geom_line()
 plotdata4<-p$data %>%
   filter(component=="trend" | component=="irregular") %>%
@@ -281,9 +296,11 @@ ggplot(plotdata4,aes(Ref_Date,index))+
   geom_line(size=2,color=col[1])
 
 GDP<-fromJSON(paste(url,"GrossDomesticProduct",sep="")) %>%
-  filter(Industries=="All industries" & Type=="Gross domestic product at basic prices") %>%
+  filter(Type=="Gross domestic product at market prices",
+         When>=1997) %>%
   select(When,gdp=Alberta)
-GDP<-ts(GDP$gdp,frequency=1,start=c(1997,1))
+GDP<-ts(GDP$gdp,frequency=1,start=1997)/1000000000
+GDP<-ts(c(GDP,338.3),start=1997)
 plotdata5<-data.frame(Ref_Date=seq(as.yearmon("2001-01"),
                                    length.out=length(labdata_ab$index),
                                    by=1/12)) %>%
@@ -293,7 +310,7 @@ plotdata5<-data.frame(Ref_Date=seq(as.yearmon("2001-01"),
   left_join(
     data.frame(GDP) %>% 
       mutate(GDP=as.numeric(GDP)) %>%
-      cbind(data.frame(year=seq(1997,2020,1))) %>% 
+      cbind(data.frame(year=seq(1997,length(GDP)+1997-1,1))) %>% 
       mutate(GDPGrowth=(GDP/lag(GDP,1)-1)) %>%
       select(year,GDPGrowth,GDP),by="year"
   ) %>%
@@ -332,6 +349,56 @@ ggplot(plotdata6,aes(Ref_Date,relGDP))+geom_line()+
 table2<-plotdata6
 write.csv(table2,file="ECI_Index_Data2.csv",row.names = F)
 
+# Try to Construct a Monthly GDP value
+test_reg<-lm(log(GDP)~log(index),data=plotdata5)
+summary(test_reg)
+newdata<-plotdata4 %>%
+  mutate(year=year(Ref_Date)) %>%
+  left_join(
+    data.frame(GDP) %>% 
+      mutate(GDP=as.numeric(GDP)) %>%
+      cbind(data.frame(year=seq(1997,1997+length(GDP)-1,1))) %>% 
+      mutate(GDPGrowth=(GDP/lag(GDP,1)-1)) %>%
+      select(year,GDPGrowth,GDP),by="year"
+  )
+newdata<-newdata %>%
+  mutate(fitted=predict(test_reg,newdata),
+         actual=log(GDP))
+ggplot(newdata,aes(Ref_Date))+
+  geom_line(aes(y=fitted,color='Fitted Index'))+
+  geom_line(aes(y=actual,color='Actual GDP'))
+
+# Temporal Disaggregation of Annual GDP using the Activity Index
+# require(readxl)
+# aai<-read_excel("alberta-activity-index-data-table.xlsx")
+# colnames(aai)<-c("When","AAX")
+# AAX_series<-ts(filter(aai,When>=as.Date("2001-01-01"))$AAX,start=2001,frequency=12)
+GDP_series<-window(GDP,start=2001,frequency=1)
+Index_series<-ts(newdata$index,start=2001,frequency=12)
+model<-td(GDP_series~Index_series,
+   conversion = "sum",
+   to = "monthly")
+summary(model)
+plot(model)
+plot(predict(model))
+testplot<-newdata %>% cbind(data.frame(monthly_gdp=predict(model))) %>%
+  group_by(year) %>%
+  mutate(GDPtest=sum(monthly_gdp),
+         annualized=monthly_gdp*12) %>% ungroup()
+ggplot(testplot %>% filter(Ref_Date>=2005),aes(Ref_Date,annualized))+
+  geom_line(size=2,color=col[1])+
+  geom_point(data=filter(testplot,Ref_Date==max(Ref_Date)),
+             stroke=2.5,size=2.5,shape=21,fill='white',color=col[1])+
+  mytheme+
+  scale_y_continuous(label=dollar)+
+  scale_x_yearmon(format='%Y',breaks=pretty_breaks(7))+
+  labs(y="Billions of (2012) Dollars, Annualized",
+       x="",
+       title="Experimental Estimates of Alberta's Monthly Real GDP",
+       caption='Graph by @trevortombe',
+       subtitle="Source: own calculations from a composite of several dozen monthly indicators constructed to exactly match actual annual real GDP levels")
+
+# Real per Capita Labour Compensation
 temp<-plotdata6 %>% filter(Ref_Date>="Jan 2001") %>%
   mutate(rel_labcomp_real_pc=rel_labcomp_real_pc/rel_labcomp_real_pc[1])
 ggplot(temp,aes(Ref_Date,100*rel_labcomp_real_pc))+
