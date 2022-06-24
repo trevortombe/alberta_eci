@@ -105,9 +105,9 @@ lab_vars=c("employment_rate","employment","unemployment","unemp_men_prime",
 con_vars=c("housing","earnings","retail","vehicles","trucks")
 
 # Smaller Set
-egy_vars=c("oil","rigs")
-biz_vars=c("mfg","trade")
-lab_vars=c("employment","hours","full_part_emp")
+egy_vars=c("oil","rigs","exports_energy")
+biz_vars=c("mfg","trade","exports_nonenergy","self_emp")
+lab_vars=c("employment","hours")
 con_vars=c("earnings","retail","housing","vehicles")
 
 # Form Matrix of Main Data
@@ -128,7 +128,7 @@ ABdata<-ABdata %>%
 #             "exports_energy","exports_nonenergy")){
 #   ABdata[,v]<-ABdata[,v]/deflate
 # }
-for (v in c("mfg","trade","earnings","retail")){
+for (v in c("mfg","trade","earnings","retail","exports_energy","exports_nonenergy")){
   ABdata[,v]<-ABdata[,v]/deflate
 }
 
@@ -188,7 +188,7 @@ ggplot(plotdata,aes(Ref_Date,index,group=group,fill=group))+
   geom_hline(yintercept=0,size=1,color="gray50")+
   scale_fill_brewer(name="",palette="Set1")+
   mytheme+
-  scale_y_continuous(limit=c(-6,NA))+
+  # scale_y_continuous(limit=c(-6,NA))+
   scale_x_continuous(expand=c(0,0),breaks=pretty_breaks(n=8),
                      limit=c(NA,max(plotdata$Ref_Date)+4))+
   annotate('text',x=max(plotdata$Ref_Date)+3,hjust=0,y=1,label="Above\nTrend",size=3)+
@@ -246,7 +246,7 @@ ggplot(plotdata3,aes(Ref_Date)) +
   geom_line(aes(y=index),size=2,color=col[1])+
   annotate('text',x=2013.5,y=-.0375,label="Actual GDP\nGrowth",
            fontface="bold",color=colbar[2])+
-  annotate('text',x=2018,y=.0875,label="\"Alberta Economic\nConditions Index\"",
+  annotate('text',x=2018,y=.125,label="\"Alberta Economic\nConditions Index\"",
            fontface="bold",color=col[1],hjust=1)+
   mytheme+
   scale_y_continuous(breaks = pretty_breaks(8),label=percent)+
@@ -369,10 +369,10 @@ ggplot(newdata,aes(Ref_Date))+
   geom_line(aes(y=actual,color='Actual GDP'))
 
 # Temporal Disaggregation of Annual GDP using the Activity Index
-# require(readxl)
-# aai<-read_excel("alberta-activity-index-data-table.xlsx")
-# colnames(aai)<-c("When","AAX")
-# AAX_series<-ts(filter(aai,When>=as.Date("2001-01-01"))$AAX,start=2001,frequency=12)
+require(readxl)
+aai<-read_excel("alberta-activity-index-data-table.xlsx")
+colnames(aai)<-c("When","AAX")
+AAX_series<-ts(filter(aai,When>=as.Date("2001-01-01"))$AAX,start=2001,frequency=12)
 GDP_series<-window(GDP,start=2001,frequency=1)
 Index_series<-ts(newdata$index,start=2001,frequency=12)
 model<-td(GDP_series~Index_series,
@@ -381,11 +381,24 @@ model<-td(GDP_series~Index_series,
 summary(model)
 plot(model)
 plot(predict(model))
-testplot<-newdata %>% cbind(data.frame(monthly_gdp=predict(model))) %>%
+testplot<-newdata %>% 
+  # filter(Ref_Date!="Apr 2022") %>%
+  cbind(data.frame(monthly_gdp=predict(model))) %>%
   group_by(year) %>%
   mutate(GDPtest=sum(monthly_gdp),
          annualized=monthly_gdp*12) %>% ungroup()
-ggplot(testplot %>% filter(Ref_Date>=2005),aes(Ref_Date,annualized))+
+ggplot(testplot %>% filter(Ref_Date>="Jan 2005"),aes(Ref_Date,annualized))+
+  annotate("rect",xmin=as.numeric(as.yearmon("Oct 2008")), 
+           xmax=as.numeric(as.yearmon("May 2009")),
+           ymin=-Inf, ymax=+Inf, alpha=0.2, fill="dodgerblue")+
+  annotate("rect",xmin=as.numeric(as.yearmon("Oct 2014")), 
+           xmax=as.numeric(as.yearmon("Jul 2016")),
+           ymin=-Inf, ymax=+Inf, alpha=0.2, fill="dodgerblue")+
+  annotate("rect",xmin=as.numeric(as.yearmon("Feb 2020")), 
+           xmax=as.numeric(as.yearmon("May 2020")),
+           ymin=-Inf, ymax=+Inf, alpha=0.2, fill="dodgerblue")+
+  annotate("text",x=2014.6,hjust=1,y=Inf,vjust=1,alpha=0.75,
+           label="Recessions",color="dodgerblue",size=2.5)+
   geom_line(size=2,color=col[1])+
   geom_point(data=filter(testplot,Ref_Date==max(Ref_Date)),
              stroke=2.5,size=2.5,shape=21,fill='white',color=col[1])+
@@ -396,7 +409,8 @@ ggplot(testplot %>% filter(Ref_Date>=2005),aes(Ref_Date,annualized))+
        x="",
        title="Experimental Estimates of Alberta's Monthly Real GDP",
        caption='Graph by @trevortombe',
-       subtitle="Source: own calculations from a composite of several dozen monthly indicators constructed to exactly match actual annual real GDP levels")
+       subtitle="Source: own calculations from a composite of several monthly indicators constructed to exactly match actual annual real GDP levels")
+ggsave('MonthlyGDP_Experimental.png',width = 7,height=3.5)
 
 # Real per Capita Labour Compensation
 temp<-plotdata6 %>% filter(Ref_Date>="Jan 2001") %>%
