@@ -21,4 +21,4 @@ is plotted below:
 
 ------------------------------------------------------------------------
 
-The index was last updated on 2022-08-01 08:56:33 MDT.
+The index was last updated on 2022-08-12 09:46:20 MDT.

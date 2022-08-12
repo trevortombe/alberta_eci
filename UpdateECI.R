@@ -397,7 +397,7 @@ ggplot(testplot %>% filter(Ref_Date>="Jan 2005"),aes(Ref_Date,annualized))+
   annotate("rect",xmin=as.numeric(as.yearmon("Feb 2020")), 
            xmax=as.numeric(as.yearmon("May 2020")),
            ymin=-Inf, ymax=+Inf, alpha=0.2, fill="dodgerblue")+
-  annotate("text",x=2014.6,hjust=1,y=Inf,vjust=1,alpha=0.75,
+  annotate("text",x=2014.6,hjust=1,y=Inf,vjust=1,alpha=0.5,
            label="Recessions",color="dodgerblue",size=2.5)+
   geom_line(size=2,color=col[1])+
   geom_point(data=filter(testplot,Ref_Date==max(Ref_Date)),
@@ -405,11 +405,11 @@ ggplot(testplot %>% filter(Ref_Date>="Jan 2005"),aes(Ref_Date,annualized))+
   mytheme+
   scale_y_continuous(label=dollar)+
   scale_x_yearmon(format='%Y',breaks=pretty_breaks(7))+
-  labs(y="Billions of (2012) Dollars, Annualized",
-       x="",
+  labs(x="",
        title="Experimental Estimates of Alberta's Monthly Real GDP",
        caption='Graph by @trevortombe',
-       subtitle="Source: own calculations from a composite of several monthly indicators constructed to exactly match actual annual real GDP levels")
+       subtitle="Source: own calculations from a composite of several monthly indicators constructed to exactly match actual annual real GDP levels",
+       y="Billions of (2012) Dollars, Annualized")
 ggsave('MonthlyGDP_Experimental.png',width = 7,height=3.5)
 
 # Real per Capita Labour Compensation
