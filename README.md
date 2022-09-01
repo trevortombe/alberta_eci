@@ -14,11 +14,11 @@ file is run, manual entry of data may be required (for example, wells
 drilled). Third, “ECI.R” estimates the first principle component from
 this data and generates the visualization.
 
-The latest ECI for May 2022 is 1.39. The full time series since Jan 2002
+The latest ECI for Jun 2022 is 1.01. The full time series since Jan 2002
 is plotted below:
 
 ![Alberta ECI](plot.png)
 
 ------------------------------------------------------------------------
 
-The index was last updated on 2022-08-12 09:46:20 MDT.
+The index was last updated on 2022-09-01 08:56:35 MDT.
