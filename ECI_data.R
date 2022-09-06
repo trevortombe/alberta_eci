@@ -228,7 +228,7 @@ oil<-fromJSON(paste(url,"OilProduction",sep="")) %>%
   filter(Type=="Total") %>%
   select(When,oil=Alberta)
 #oil[(dim(oil)[1]+1),4]<-14275240.2 # add latest data point manually from http://www.aer.ca/documents/sts/st3/Oil_current.pdf
-oldoil<-read.csv("old_oil.csv") %>% 
+oldoil<-read.csv("Data/old_oil.csv") %>% 
   mutate(When=as.yearmon(Date,"%b-%y")) %>% 
   select(When,oldoil=Adjusted.AB.Production) %>%
   filter(When<="Jan 2007") %>%

@@ -207,7 +207,7 @@ ggplot(plotdata,aes(Ref_Date,index,group=group,fill=group))+
 The index is constructed to have mean zero and unit variance. A value of +1 means YoY growth is 1 standard deviation above trend.",
        caption="Sources: Own calculatons from various Statistics Canada data tables. Graph by @trevortombe.
 It is the 1st principal component from several dozen monthly data series. Based on the Chicago Fed National Activity Index.")
-ggsave("plot.png",width=8,height=4.5,dpi=200)
+ggsave("Figures/plot.png",width=8,height=4.5,dpi=200)
 
 # Aggregate by Year
 GDP<-fromJSON(paste(url,"GrossDomesticProduct",sep="")) %>%
@@ -257,7 +257,7 @@ ggplot(plotdata3,aes(Ref_Date)) +
        title=paste("Index of Alberta's Monthly Economic Conditions, Jan 2002 to",today),
        subtitle="The index is constructed to have mean zero and unit variance. It is then rescale to best fit actual GDP growth.",
        caption="Sources: Own calculatons from multiple monthly data series. Graph by @trevortombe.")
-ggsave("GDPplot.png",width=8,height=4,dpi=200)
+ggsave("Figures/GDPplot.png",width=8,height=4,dpi=200)
 
 # Creates an update to the README page on GitHub
 updated<-.POSIXct(Sys.time(), "America/Denver")
@@ -268,7 +268,7 @@ table<-plotdata %>%
   spread(group,index) %>%
   rename(`Alberta Economic Conditions Index`=ABindex,
          Date=Ref_Date)
-write.csv(table,file="ECI_Index_Data.csv",row.names = F)
+write.csv(table,file="Data/ECI_Index_Data.csv",row.names = F)
 
 # Level Index, Initial Values Correspond to 2002 monthly labour compensation levels relative to the 2001 average
 labdata<-getTABLE("36100205")
@@ -347,7 +347,7 @@ ggplot(plotdata6,aes(Ref_Date,relGDP))+geom_line()+
   geom_line(aes(y=rel_labcomp_real_pc,color='labour comp per worker'))
 
 table2<-plotdata6
-write.csv(table2,file="ECI_Index_Data2.csv",row.names = F)
+write.csv(table2,file="Data/ECI_Index_Data2.csv",row.names = F)
 
 # Try to Construct a Monthly GDP value
 test_reg<-lm(log(GDP)~log(index),data=plotdata5)
@@ -370,7 +370,7 @@ ggplot(newdata,aes(Ref_Date))+
 
 # Temporal Disaggregation of Annual GDP using the Activity Index
 require(readxl)
-aai<-read_excel("alberta-activity-index-data-table.xlsx")
+aai<-read_excel("Data/alberta-activity-index-data-table.xlsx")
 colnames(aai)<-c("When","AAX")
 AAX_series<-ts(filter(aai,When>=as.Date("2001-01-01"))$AAX,start=2001,frequency=12)
 GDP_series<-window(GDP,start=2001,frequency=1)
@@ -387,7 +387,7 @@ testplot<-newdata %>%
   group_by(year) %>%
   mutate(GDPtest=sum(monthly_gdp),
          annualized=monthly_gdp*12) %>% ungroup()
-ggplot(testplot %>% filter(Ref_Date>="Jan 2005"),aes(Ref_Date,annualized))+
+p<-ggplot(testplot %>% filter(Ref_Date>="Jan 2005"),aes(Ref_Date,annualized))+
   annotate("rect",xmin=as.numeric(as.yearmon("Oct 2008")), 
            xmax=as.numeric(as.yearmon("May 2009")),
            ymin=-Inf, ymax=+Inf, alpha=0.2, fill="dodgerblue")+
@@ -404,13 +404,16 @@ ggplot(testplot %>% filter(Ref_Date>="Jan 2005"),aes(Ref_Date,annualized))+
              stroke=2.5,size=2.5,shape=21,fill='white',color=col[1])+
   mytheme+
   scale_y_continuous(label=dollar)+
-  scale_x_yearmon(format='%Y',breaks=pretty_breaks(7))+
-  labs(x="",
+  scale_x_yearmon(format='%Y',breaks=pretty_breaks(7))
+p+labs(x="",
        title="Experimental Estimates of Alberta's Monthly Real GDP",
        caption='Graph by @trevortombe',
        subtitle="Source: own calculations from a composite of several monthly indicators constructed to exactly match actual annual real GDP levels",
        y="Billions of (2012) Dollars, Annualized")
-ggsave('MonthlyGDP_Experimental.png',width = 7,height=3.5)
+ggsave('Figures/MonthlyGDP_Experimental.png',width = 7,height=3.5)
+p+labs(x="",
+       y="Billions of (2012) Dollars, Annualized")
+ggsave('Figures/MonthlyGDP_Experimental_notitle.png',width = 7,height=3.5)
 
 # Real per Capita Labour Compensation
 temp<-plotdata6 %>% filter(Ref_Date>="Jan 2001") %>%
@@ -429,4 +432,4 @@ ggplot(temp,aes(Ref_Date,100*rel_labcomp_real_pc))+
        subtitle = "Note: Displays total compensation to workers in Alberta relative to the population aged 15 and over.
 Source: Own calculations from Statistics Canada data tables 36-10-0205, 18-10-0004, and 14-10-0287.",
        title="Total Labour Compensation per Person 15+ in Alberta (Inflation Adjusted)")
-ggsave('EarningsPlot.png',width = 7,height=3.5)
+ggsave('Figures/EarningsPlot.png',width = 7,height=3.5)

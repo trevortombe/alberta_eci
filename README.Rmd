@@ -17,7 +17,7 @@ There are three R files necessary to construct the Economic Conditions Index. Fi
 
 The latest ECI for `r plotdata[dim(plotdata)[1],1]` is `r round(plotdata[dim(plotdata)[1],2],2)`. The full time series since `r plotdata[1,1]` is plotted below:
 
-![Alberta ECI](plot.png)
+![Alberta ECI](Figures/plot.png)
 
 ---
 
