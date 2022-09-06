@@ -21,4 +21,8 @@ is plotted below:
 
 ------------------------------------------------------------------------
 
+<<<<<<< HEAD
 The index was last updated on 2022-09-06 08:18:35 MDT.
+=======
+The index was last updated on 2022-09-01 08:56:35 MDT.
+>>>>>>> b6f261ba160ed97c1a390833804e41657c958a91
