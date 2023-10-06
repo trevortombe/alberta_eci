@@ -190,7 +190,7 @@ ggplot(plotdata,aes(Ref_Date,index,group=group,fill=group))+
   mytheme+
   # scale_y_continuous(limit=c(-6,NA))+
   scale_x_continuous(expand=c(0,0),breaks=pretty_breaks(n=8),
-                     limit=c(NA,max(plotdata$Ref_Date)+4))+
+                     limit=c(NA,max(plotdata$Ref_Date)+5))+
   annotate('text',x=max(plotdata$Ref_Date)+3,hjust=0,y=1,label="Above\nTrend",size=3)+
   annotate('text',x=max(plotdata$Ref_Date)+3,hjust=0,y=-1,label="Below\nTrend",size=3)+
   geom_segment(x=max(plotdata$Ref_Date)+2.5,xend=max(plotdata$Ref_Date)+2.5,
