@@ -9,3 +9,7 @@ The following compiles monthly data from a variety of sourses to estimate real-t
 The Alberta ECI provides a strong indication of overall economic conditions. At an annual frequency, it is highly correlated with measured changes in Alberta's real GDP.
 
 ![](https://raw.githubusercontent.com/trevortombe/alberta_eci/master/Figures/GDPplot.png)
+
+The index can therefore also be used to temporally disaggregate annual GDP to the monthly level
+
+![](https://raw.githubusercontent.com/trevortombe/alberta_eci/master/Figures/MonthlyGDP_Experimental.png)
