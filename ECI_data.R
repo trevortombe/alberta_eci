@@ -70,10 +70,21 @@ earnings<-earndata %>%
 
 # Retail Sales
 retdata<-getTABLE("20100008")
-retail<-retdata %>%
+retail_old<-retdata %>%
   filter(GEO=="Alberta",NAICS=="Retail trade",
          Adjustments=="Seasonally adjusted") %>%
-  select(When=Ref_Date,retail=Value)
+  select(When=Ref_Date,old=Value)
+retail_new<-get_cansim_vector('1446859973') %>%
+  mutate(When=as.yearmon(Date)) %>%
+  select(When,new=VALUE)
+retail<-data.frame(
+  When=min(retail_old$When)+seq(0,max(retail_new$When)-min(retail_old$When),1/12)
+) %>%
+  left_join(retail_old,by='When') %>%
+  left_join(retail_new,by='When') %>%
+  mutate(splice=old*weighted.mean(new,When=='Jan 2017')/weighted.mean(old,When=='Jan 2017')) %>%
+  mutate(retail=ifelse(When<'Jan 2017',splice,new)) %>%
+  select(When,retail)
 
 # Employment Rates
 LFS<-getTABLE("14100287")
@@ -207,11 +218,11 @@ exports_energy<-exports_data %>%
   select(When=Ref_Date,exports_energy=Value)
 
 # Wells Drilled, with Seasonal Adjustment
-wells<-fromJSON(paste(url,"WellsDrilled",sep="")) %>%
-  filter(Commodity=="All Commodities" & WellType=="All Well Types") %>%
-  mutate(When=as.yearmon(When)) %>%
+well_url<-'https://api.economicdata.alberta.ca/api/data?code=f4a8bd80-ec75-4432-ab5e-a15add01e5cd'
+wells<-fromJSON(well_url) %>%
+  mutate(When=as.yearmon(Date)) %>%
   arrange(When) %>%
-  select(When,wells=Alberta)
+  select(When,wells=Value)
 # manual add wells for latest month (if unavailable) from https://www.aer.ca/providing-information/data-and-reports/statistical-reports/st59.html
 #wells<-wells %>%
 #  rbind(data.frame(When=as.yearmon("2020-05"),wells=38))
@@ -224,9 +235,10 @@ wells<-p$data %>%
   rename(When=x)
 
 # Oil Production
-oil<-fromJSON(paste(url,"OilProduction",sep="")) %>%
-  filter(Type=="Total") %>%
-  select(When,oil=Alberta)
+oil_url<-'https://api.economicdata.alberta.ca/api/data?code=b0881da3-704c-42b9-a429-c8eff0ec5c73'
+oil<-fromJSON(oil_url) %>%
+  mutate(When=as.yearmon(Date)) %>%
+  select(When,oil=Value)
 #oil[(dim(oil)[1]+1),4]<-14275240.2 # add latest data point manually from http://www.aer.ca/documents/sts/st3/Oil_current.pdf
 oldoil<-read.csv("Data/old_oil.csv") %>% 
   mutate(When=as.yearmon(Date,"%b-%y")) %>% 
@@ -240,15 +252,16 @@ oil<-oil %>%
   rbind(oldoil) %>%
   arrange(When)
 
-# Oil Prices
-oilprice<-fromJSON(paste(url,"OilPrice",sep="")) %>%
-  filter(Type=="WTI") %>%
-  select(When,oilprice=Alberta)
+# WCS Oil Prices
+price_url<-'https://api.economicdata.alberta.ca/api/data?code=667b15de-bd46-4be3-ad80-a94ba1e5ee30'
+oilprice<-fromJSON(price_url) %>%
+  mutate(When=as.yearmon(Date)) %>%
+  select(When,oilprice=Value)
 
 # Annual GDP Growth
-GDP<-fromJSON(paste(url,"GrossDomesticProduct",sep="")) %>%
-  filter(Industries=="All industries" & Type=="Gross domestic product at basic prices") %>%
-  select(When,gdp=Alberta)
+GDP<-get_cansim_vector('62466959') %>%
+  mutate(When=as.yearmon(Date)) %>%
+  select(When,gdp=VALUE)
 GDP<-ts(GDP$gdp,frequency=1,start=c(1997,1))
 # 
 # # CFIB Business Barometer -- update manually from their website
@@ -299,15 +312,16 @@ hours<-hoursdata %>%
   select(When=Ref_Date,hours=Value)
 
 ## Active drilling rigs
-rigs<-fromJSON(paste(url,"RigActivity",sep="")) %>%
-  filter(Type=="Active") %>%
-  select(When,rigs=Alberta)
+rig_url<-'https://api.economicdata.alberta.ca/api/data?code=9442d479-7ad6-47b6-aa12-ef03c750a50d'
+rigs<-fromJSON(rig_url) %>%
+  mutate(When=as.yearmon(Date)) %>%
+  select(When,rigs=Value)
 
 # MLS Sales, seasonally adjust
-# October is mis-coded so have to fix manually
-temp<-fromJSON(paste(url,"RealEstateSales",sep="")) %>%
-  filter(Type=="Province") %>%
-  select(mls=Alberta)
+mls_url<-'https://api.economicdata.alberta.ca/api/data?code=2731cf85-3590-4a01-8a91-437ff439a7d2'
+temp<-fromJSON(mls_url) %>%
+  mutate(When=as.yearmon(Date)) %>%
+  select(mls=Value)
 MLSdata<-temp %>%
   mutate(When=seq(as.yearmon("1980-01"),length.out=length(temp$mls),by=1/12))
 p<-ggsdc(MLSdata, aes(x = When, y = mls),frequency=12,method = "seas") + geom_line()

@@ -5,7 +5,7 @@ rm(list=ls(all=TRUE)) # wipes previous workspace
 ###########################
 # Common Packages
 packages<-c("curl","scales","zoo","tidyverse","tempdisagg",
-            "ggseas","ggplot2","ggthemes","jsonlite",
+            "ggseas","ggplot2","ggthemes","jsonlite","cansim",
             "data.table","rmarkdown","testit")
 check.packages <- function(pkg){
   new.pkg <- pkg[!(pkg %in% installed.packages()[, "Package"])]
@@ -210,11 +210,6 @@ It is the 1st principal component from several dozen monthly data series. Based 
 ggsave("Figures/plot.png",width=8,height=4.5,dpi=200)
 
 # Aggregate by Year
-GDP<-fromJSON(paste(url,"GrossDomesticProduct",sep="")) %>%
-  filter(Type=="Gross domestic product at market prices",
-         When>=1997) %>%
-  select(When,gdp=Alberta)
-GDP<-ts(GDP$gdp,frequency=1,start=c(1997,1))
 plotdata2<-data.frame(Ref_Date=seq(as.yearmon("2002-01"),
                                    length.out=length(ABindex),
                                    by=1/12)) %>%
@@ -295,12 +290,6 @@ plotdata4<-p$data %>%
 ggplot(plotdata4,aes(Ref_Date,index))+
   geom_line(size=2,color=col[1])
 
-GDP<-fromJSON(paste(url,"GrossDomesticProduct",sep="")) %>%
-  filter(Type=="Gross domestic product at market prices",
-         When>=1997) %>%
-  select(When,gdp=Alberta)
-GDP<-ts(GDP$gdp,frequency=1,start=1997)/1000000000
-GDP<-ts(c(GDP,338.3),start=1997)
 plotdata5<-data.frame(Ref_Date=seq(as.yearmon("2001-01"),
                                    length.out=length(labdata_ab$index),
                                    by=1/12)) %>%
