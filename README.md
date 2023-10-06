@@ -20,4 +20,4 @@ The latest ECI for Jul 2023 is -0.76. The full time series since Jan
 
 ------------------------------------------------------------------------
 
-The index was last updated on 2023-10-06 17:31:48 MDT.
+The index was last updated on 2023-10-06 17:42:01 MDT.

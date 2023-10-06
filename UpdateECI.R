@@ -75,6 +75,8 @@ getTABLE<-function(x) {
 mytheme<-theme_minimal()+theme(
   axis.title.y = element_text(size=9),
   axis.title.x = element_text(size=9),
+  panel.background = element_rect(fill='white',color=NA),
+  plot.background = element_rect(fill='white',color=NA),
   legend.position = "top",
   legend.text=element_text(size=10),
   legend.margin=margin(c(0,0,-0.25,0),unit="cm"),
@@ -188,9 +190,8 @@ ggplot(plotdata,aes(Ref_Date,index,group=group,fill=group))+
   geom_hline(yintercept=0,size=1,color="gray50")+
   scale_fill_brewer(name="",palette="Set1")+
   mytheme+
-  # scale_y_continuous(limit=c(-6,NA))+
   scale_x_continuous(expand=c(0,0),breaks=pretty_breaks(n=8),
-                     limit=c(NA,max(plotdata$Ref_Date)+5))+
+                     limit=c(NA,max(plotdata$Ref_Date)+6))+
   annotate('text',x=max(plotdata$Ref_Date)+3,hjust=0,y=1,label="Above\nTrend",size=3)+
   annotate('text',x=max(plotdata$Ref_Date)+3,hjust=0,y=-1,label="Below\nTrend",size=3)+
   geom_segment(x=max(plotdata$Ref_Date)+2.5,xend=max(plotdata$Ref_Date)+2.5,
