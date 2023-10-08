@@ -13,11 +13,11 @@ file is run, manual entry of data may be required (for example, wells
 drilled). Third, “ECI.R” estimates the first principle component from
 this data and generates the visualization.
 
-The latest ECI for Jul 2023 is -0.76. The full time series since Jan
+The latest ECI for Jul 2023 is -0.58. The full time series since Jan
 2002 is plotted below:
 
 ![Alberta ECI](Figures/plot.png)
 
 ------------------------------------------------------------------------
 
-The index was last updated on 2023-10-06 17:42:01 MDT.
+The index was last updated on 2023-10-08 12:03:04 MDT.

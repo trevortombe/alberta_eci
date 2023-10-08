@@ -47,82 +47,43 @@ mfgmachinery<-mfgdata %>%
   mutate(Value=ifelse(is.na(Value),0,Value)) %>%
   select(When=Ref_Date,mfgmachinery=Value)
 
-# WHolesale Trade
-tradedata<-getTABLE("20100074")
-trade<-tradedata %>%
-  filter(NAICS=="Wholesale trade",
-         Adjustments=="Seasonally adjusted",GEO=="Alberta") %>%
-  select(When=Ref_Date,trade=Value)
+# Wholesale Trade: 20-10-0074-01
+trade<-get_cansim_vector('v52367703') %>%
+  select(When=Date,trade=VALUE)
 
-# Housing Starts
-housedata<-getTABLE("34100143")
-housing<-housedata %>%
-  filter(GEO=="Alberta",Housing.estimates=="Housing starts",
-         Type.of.unit=="Total units") %>%
-  select(When=Ref_Date,housing=Value)
+# Housing Starts": 34-10-0143-01
+housing<-get_cansim_vector('v729967') %>%
+  select(When=Date,housing=VALUE)
 
-# Average weekly earnings
-earndata<-getTABLE("14100223")
-earnings<-earndata %>%
-  filter(GEO=="Alberta",Estimate=="Average weekly earnings including overtime for all employees",
-         NAICS=="Industrial aggregate excluding unclassified businesses") %>%
-  select(When=Ref_Date,earnings=Value)
+# Average weekly earnings: 14-10-0223-01
+earnings<-get_cansim_vector('v79311387') %>%
+  select(When=Date,earnings=VALUE)
 
-# Retail Sales
-retdata<-getTABLE("20100008")
-retail_old<-retdata %>%
-  filter(GEO=="Alberta",NAICS=="Retail trade",
-         Adjustments=="Seasonally adjusted") %>%
-  select(When=Ref_Date,old=Value)
+# Retail Sales: 20-01-0008-01
+retail_old<-get_cansim_vector('52367215') %>%
+  select(When=Date,old=VALUE)
 retail_new<-get_cansim_vector('1446859973') %>%
-  mutate(When=as.yearmon(Date)) %>%
-  select(When,new=VALUE)
-retail<-data.frame(
-  When=min(retail_old$When)+seq(0,max(retail_new$When)-min(retail_old$When),1/12)
-) %>%
+  select(When=Date,new=VALUE)
+retail<-data.frame(When=seq(min(retail_old$When),max(retail_new$When),by = "month")) %>%
   left_join(retail_old,by='When') %>%
   left_join(retail_new,by='When') %>%
-  mutate(splice=old*weighted.mean(new,When=='Jan 2017')/weighted.mean(old,When=='Jan 2017')) %>%
-  mutate(retail=ifelse(When<'Jan 2017',splice,new)) %>%
+  mutate(splice=old*weighted.mean(new,When==min(retail_new$When))/weighted.mean(old,When==min(retail_new$When))) %>%
+  mutate(retail=ifelse(When<min(retail_new$When),splice,new)) %>%
   select(When,retail)
 
-# Employment Rates
-LFS<-getTABLE("14100287")
-employment<-LFS %>%
-  filter(Statistics=="Estimate" & Data.type=="Seasonally adjusted" &
-           Labour.force.characteristics=="Employment" & Sex=="Both sexes" &
-           Age.group=="15 years and over" & GEO=="Alberta") %>%
-  select(When=Ref_Date,employment=Value)
-employment_rate<-LFS %>%
-  filter(Statistics=="Estimate" & Data.type=="Seasonally adjusted" &
-           Labour.force.characteristics=="Employment rate" & Sex=="Both sexes" &
-           Age.group=="15 years and over" & GEO=="Alberta") %>%
-  select(When=Ref_Date,employment_rate=Value)
-full_part_emp<-LFS %>%
-  filter(Data.type=="Seasonally adjusted",Labour.force.characteristics %in% c("Full-time employment",
-                                                                              "Employment"),
-         Sex=="Both sexes",Statistics=="Estimate",Age.group=="15 years and over",GEO=="Alberta") %>%
-  select(Ref_Date,Value,Labour.force.characteristics) %>%
-  spread(Labour.force.characteristics,Value) %>%
-  mutate(fulltime_share=`Full-time employment`/Employment) %>%
-  select(When=Ref_Date,fulltime_share)
+# Employment Rates: 14-10-0287-01
+employment<-get_cansim_vector('v2064512') %>%
+  select(When=Date,employment=VALUE)
+employment_rate<-get_cansim_vector('v2064518') %>%
+  select(When=Date,employment_rate=VALUE)
 
 # Unemployment
-unemployment<-LFS %>%
-  filter(Statistics=="Estimate" & Data.type=="Seasonally adjusted" &
-           Labour.force.characteristics=="Unemployment rate" & Sex=="Both sexes" &
-           Age.group=="15 years and over" & GEO=="Alberta") %>%
-  select(When=Ref_Date,unemployment=Value)
-unemp_men_prime<-LFS %>%
-  filter(Statistics=="Estimate" & Data.type=="Seasonally adjusted" &
-           Labour.force.characteristics=="Unemployment rate" & Sex=="Males" &
-           Age.group=="25 to 54 years" & GEO=="Alberta") %>%
-  select(When=Ref_Date,unemp_men_prime=Value)
-unemp_women_prime<-LFS %>%
-  filter(Statistics=="Estimate" & Data.type=="Seasonally adjusted" &
-           Labour.force.characteristics=="Unemployment rate" & Sex=="Females" &
-           Age.group=="25 to 54 years" & GEO=="Alberta") %>%
-  select(When=Ref_Date,unemp_women_prime=Value)
+unemployment<-get_cansim_vector('v2064516') %>%
+  select(When=Date,unemployment=VALUE)
+unemp_men_prime<-get_cansim_vector('v2064660') %>%
+  select(When=Date,unemp_men_prime=VALUE)
+unemp_women_prime<-get_cansim_vector('v2064669') %>%
+  select(When=Date,unemp_women_prime=VALUE)
 unemp<-getTABLE("14100342")
 unemp_duration<-unemp %>%
   filter(Duration.of.unemployment=="Average weeks unemployed, no top-code",
@@ -162,11 +123,8 @@ under_unemp<-p$data %>% # this is seasonally adjusted
   select(When=x,under_unemp=rate)
 
 # Prime-Age Participation Rate
-partrate<-LFS %>%
-  filter(Statistics=="Estimate" & Data.type=="Seasonally adjusted" &
-           Labour.force.characteristics=="Participation rate" & Sex=="Both sexes" &
-           Age.group=="25 to 54 years" & GEO=="Alberta") %>%
-  select(When=Ref_Date,partrate=Value)
+partrate<-get_cansim_vector('v2064652') %>%
+  select(When=Date,partrate=VALUE)
 
 # Vehicle Sales, with Seasonal Adjustment
 temp<-getTABLE("20100001")
