@@ -1,10 +1,9 @@
-Constructs Monthly Index of Economic Conditions in Alberta
-==========================================================
+# Constructs Monthly Index of Economic Conditions in Alberta
 
 The following compiles monthly data from a variety of courses to
 estimate real-time economic conditions in Alberta. It closely follows,
 as much as the data allows, the Chicago Fed National Activity Index.
-<a href="https://www.chicagofed.org/publications/cfnai/index" class="uri">https://www.chicagofed.org/publications/cfnai/index</a>
+<https://www.chicagofed.org/publications/cfnai/index>
 
 There are three R files necessary to construct the Economic Conditions
 Index. First “core.R” loads packages, functions, themes, and other
@@ -14,11 +13,11 @@ file is run, manual entry of data may be required (for example, wells
 drilled). Third, “ECI.R” estimates the first principle component from
 this data and generates the visualization.
 
-The latest ECI for Jul 2023 is -0.58. The full time series since Jan
+The latest ECI for Jul 2023 is -0.75. The full time series since Jan
 2002 is plotted below:
 
 ![Alberta ECI](Figures/plot.png)
 
 ------------------------------------------------------------------------
 
-The index was last updated on 2023-10-23 15:46:56.972041 MDT.
+The index was last updated on 2023-10-23 15:52:43 MDT.

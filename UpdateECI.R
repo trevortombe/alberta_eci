@@ -306,38 +306,38 @@ plotdata5<-data.frame(Ref_Date=seq(as.yearmon("2001-01"),
   ) %>%
   mutate(relGDP=GDP/GDP[1])
 
-# Compare to Real GDP Growth Rates
-regresults<-lm(relGDP~index,data=plotdata5)
-summary(regresults)
-plotdata6<-plotdata5 %>%
-  mutate(index2=coefficients(regresults)[2]*index+coefficients(regresults)[1]) %>%
-  left_join(
-    labdata %>%
-      filter(GEO=="Alberta" & Seasonal.adjustment=="Seasonally adjusted" &
-               Sector=="Compensation of employees" & Ref_Date>="Jan 2001") %>%
-      mutate(relative=Value/mean(Value)) %>%
-      select(Ref_Date,labcomp=relative),
-    by="Ref_Date"
-  ) %>%
-  left_join(
-    LFS %>%
-      filter(Labour.force.characteristics=="Population",GEO=="Alberta",
-             Sex=="Both sexes",Age.group=="15 years and over",
-             Statistics=="Estimate",Data.type=="Seasonally adjusted") %>%
-      select(Ref_Date,emp=Value),
-    by="Ref_Date"
-  ) %>%
-  mutate(rel_labcomp=labcomp/labcomp[1],
-         cpi=deflate[1:nrow(plotdata5)],
-         rel_labcomp_real=rel_labcomp*(cpi[1]/cpi),
-         rel_labcomp_real_pc=rel_labcomp_real*emp[1]/emp)
-ggplot(plotdata6,aes(Ref_Date,relGDP))+geom_line()+
-  geom_line(aes(y=index,color='test'))+
-  geom_line(aes(y=rel_labcomp_real,color='labour comp'))+
-  geom_line(aes(y=rel_labcomp_real_pc,color='labour comp per worker'))
-
-table2<-plotdata6
-write.csv(table2,file="Data/ECI_Index_Data2.csv",row.names = F)
+# # Compare to Real GDP Growth Rates
+# regresults<-lm(relGDP~index,data=plotdata5)
+# summary(regresults)
+# plotdata6<-plotdata5 %>%
+#   mutate(index2=coefficients(regresults)[2]*index+coefficients(regresults)[1]) %>%
+#   left_join(
+#     labdata %>%
+#       filter(GEO=="Alberta" & Seasonal.adjustment=="Seasonally adjusted" &
+#                Sector=="Compensation of employees" & Ref_Date>="Jan 2001") %>%
+#       mutate(relative=Value/mean(Value)) %>%
+#       select(Ref_Date,labcomp=relative),
+#     by="Ref_Date"
+#   ) %>%
+#   left_join(
+#     LFS %>%
+#       filter(Labour.force.characteristics=="Population",GEO=="Alberta",
+#              Sex=="Both sexes",Age.group=="15 years and over",
+#              Statistics=="Estimate",Data.type=="Seasonally adjusted") %>%
+#       select(Ref_Date,emp=Value),
+#     by="Ref_Date"
+#   ) %>%
+#   mutate(rel_labcomp=labcomp/labcomp[1],
+#          cpi=deflate[1:nrow(plotdata5)],
+#          rel_labcomp_real=rel_labcomp*(cpi[1]/cpi),
+#          rel_labcomp_real_pc=rel_labcomp_real*emp[1]/emp)
+# ggplot(plotdata6,aes(Ref_Date,relGDP))+geom_line()+
+#   geom_line(aes(y=index,color='test'))+
+#   geom_line(aes(y=rel_labcomp_real,color='labour comp'))+
+#   geom_line(aes(y=rel_labcomp_real_pc,color='labour comp per worker'))
+# 
+# table2<-plotdata6
+# write.csv(table2,file="Data/ECI_Index_Data2.csv",row.names = F)
 
 # Try to Construct a Monthly GDP value
 test_reg<-lm(log(GDP)~log(index),data=plotdata5)
@@ -406,20 +406,20 @@ p+labs(x="",
 ggsave('Figures/MonthlyGDP_Experimental_notitle.png',width = 7,height=3.5)
 
 # Real per Capita Labour Compensation
-temp<-plotdata6 %>% filter(Ref_Date>="Jan 2001") %>%
-  mutate(rel_labcomp_real_pc=rel_labcomp_real_pc/rel_labcomp_real_pc[1])
-ggplot(temp,aes(Ref_Date,100*rel_labcomp_real_pc))+
-  geom_hline(yintercept=100,size=1)+
-  geom_line(size=2,color=col[1])+
-  geom_segment(x=2004.75,xend=2021+2/12,y=103.10050,yend=103.10050,color=col[2],size=1,linetype='dashed')+
-  geom_point(data=filter(temp,Ref_Date==max(Ref_Date)),size=2.5,stroke=2.5,
-             color=col[1],shape=21,fill='white')+
-  mytheme+
-  scale_y_continuous("Index Value (January 2001 = 100)")+
-  scale_x_continuous(breaks=seq(2001,2021,5))+
-  labs(x="",
-       caption="Graph by @trevortombe",
-       subtitle = "Note: Displays total compensation to workers in Alberta relative to the population aged 15 and over.
-Source: Own calculations from Statistics Canada data tables 36-10-0205, 18-10-0004, and 14-10-0287.",
-       title="Total Labour Compensation per Person 15+ in Alberta (Inflation Adjusted)")
-ggsave('Figures/EarningsPlot.png',width = 7,height=3.5)
+# temp<-plotdata6 %>% filter(Ref_Date>="Jan 2001") %>%
+#   mutate(rel_labcomp_real_pc=rel_labcomp_real_pc/rel_labcomp_real_pc[1])
+# ggplot(temp,aes(Ref_Date,100*rel_labcomp_real_pc))+
+#   geom_hline(yintercept=100,size=1)+
+#   geom_line(size=2,color=col[1])+
+#   geom_segment(x=2004.75,xend=2021+2/12,y=103.10050,yend=103.10050,color=col[2],size=1,linetype='dashed')+
+#   geom_point(data=filter(temp,Ref_Date==max(Ref_Date)),size=2.5,stroke=2.5,
+#              color=col[1],shape=21,fill='white')+
+#   mytheme+
+#   scale_y_continuous("Index Value (January 2001 = 100)")+
+#   scale_x_continuous(breaks=seq(2001,2021,5))+
+#   labs(x="",
+#        caption="Graph by @trevortombe",
+#        subtitle = "Note: Displays total compensation to workers in Alberta relative to the population aged 15 and over.
+# Source: Own calculations from Statistics Canada data tables 36-10-0205, 18-10-0004, and 14-10-0287.",
+#        title="Total Labour Compensation per Person 15+ in Alberta (Inflation Adjusted)")
+# ggsave('Figures/EarningsPlot.png',width = 7,height=3.5)
