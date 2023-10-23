@@ -377,7 +377,7 @@ testplot<-newdata %>%
   group_by(year) %>%
   mutate(GDPtest=sum(monthly_gdp),
          annualized=monthly_gdp*12) %>% ungroup()
-p<-ggplot(testplot %>% filter(Ref_Date>="Jan 2005"),aes(Ref_Date,annualized))+
+p<-ggplot(testplot %>% filter(Ref_Date>="Jan 2005"),aes(Ref_Date,annualized/1000))+
   annotate("rect",xmin=as.numeric(as.yearmon("Oct 2008")), 
            xmax=as.numeric(as.yearmon("May 2009")),
            ymin=-Inf, ymax=+Inf, alpha=0.2, fill="dodgerblue")+
