@@ -263,7 +263,7 @@ p+labs(x="",
        caption='Graph by @trevortombe',
        subtitle="Source: own calculations from a composite of several monthly indicators constructed to exactly match actual annual real GDP levels",
        y="Billions of (2012) Dollars, Annualized")
-ggsave('Figures/MonthlyGDP_Experimental.png',width = 7,height=3.5)
+ggsave('Figures/MonthlyGDP_Experimental.png',width = 8,height=4)
 p+labs(x="",
        y="Billions of (2012) Dollars, Annualized")
 ggsave('Figures/MonthlyGDP_Experimental_notitle.png',width = 7,height=3.5)
