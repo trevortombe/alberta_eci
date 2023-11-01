@@ -240,7 +240,7 @@ testplot<-index_levels %>%
   group_by(year) %>%
   mutate(GDPtest=sum(monthly_gdp),
          annualized=monthly_gdp*12) %>% ungroup()
-p<-ggplot(testplot %>% filter(Ref_Date>="Jan 2005"),aes(Ref_Date,annualized))+
+p<-ggplot(testplot %>% filter(Ref_Date>="Jan 2005"),aes(Ref_Date,annualized/1000))+
   annotate("rect",xmin=as.numeric(as.yearmon("Oct 2008")), 
            xmax=as.numeric(as.yearmon("May 2009")),
            ymin=-Inf, ymax=+Inf, alpha=0.2, fill="dodgerblue")+
@@ -252,9 +252,9 @@ p<-ggplot(testplot %>% filter(Ref_Date>="Jan 2005"),aes(Ref_Date,annualized))+
            ymin=-Inf, ymax=+Inf, alpha=0.2, fill="dodgerblue")+
   annotate("text",x=2014.6,hjust=1,y=Inf,vjust=1,alpha=0.5,
            label="Recessions",color="dodgerblue",size=2.5)+
-  geom_line(size=2,color=col[1])+
+  geom_line(size=1.5,color=col[1])+
   geom_point(data=filter(testplot,Ref_Date==max(Ref_Date)),
-             stroke=2.5,size=2.5,shape=21,fill='white',color=col[1])+
+             stroke=2,size=2,shape=21,fill='white',color=col[1])+
   mytheme+
   scale_y_continuous(label=dollar)+
   scale_x_yearmon(format='%Y',breaks=pretty_breaks(7))
