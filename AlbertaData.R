@@ -10,9 +10,9 @@ mfg<-get_cansim_vector('v807466') %>%
 trade<-get_cansim_vector('v52367703') %>%
   select(When=Date,trade=VALUE)
 
-# Housing Starts": 34-10-0143-01
-housing<-get_cansim_vector('v729967') %>%
-  select(When=Date,housing=VALUE)
+# Housing Starts": 34-10-0143-01 -- error in the cansim table on Nov 1, 2023
+# housing<-get_cansim_vector('v729967') %>%
+#   select(When=Date,housing=VALUE)
 
 # Average weekly earnings: 14-10-0223-01
 earnings<-get_cansim_vector('v79311387') %>%
