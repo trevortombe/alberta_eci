@@ -59,8 +59,8 @@ source("AlbertaData.R")
 egy_vars=c("oil","rigs","exports_energy")
 biz_vars=c("mfg","trade","exports_nonenergy","self_emp")
 lab_vars=c("employment","hours")
-con_vars=c("earnings","retail","vehicles")
-# con_vars=c("earnings","retail","housing","vehicles") # error in housing; removed Nov 1
+# con_vars=c("earnings","retail","vehicles")
+con_vars=c("earnings","retail","housing","vehicles") # error in housing; removed Nov 1
 
 # Form Matrix of Main Data
 variables<-c(egy_vars,biz_vars,lab_vars,con_vars)
