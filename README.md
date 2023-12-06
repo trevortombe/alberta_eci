@@ -18,6 +18,7 @@ The latest ECI for Sep 2023 is 0.19. The full time series since Jan 2002
 is plotted below:
 
 ![Alberta ECI](Figures/plot.png)
+![Experimental Monthly Real GDP](Figures/MonthlyGDP_Experimental.png)
 
 ------------------------------------------------------------------------
 
