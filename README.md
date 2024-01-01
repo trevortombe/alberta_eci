@@ -14,12 +14,11 @@ file is run, manual entry of data may be required (for example, wells
 drilled). Third, “ECI.R” estimates the first principle component from
 this data and generates the visualization.
 
-The latest ECI for Sep 2023 is 0.19. The full time series since Jan 2002
+The latest ECI for Sep 2023 is 0.2. The full time series since Jan 2002
 is plotted below:
 
 ![Alberta ECI](Figures/plot.png)
-![Experimental Monthly Real GDP](Figures/MonthlyGDP_Experimental.png)
 
 ------------------------------------------------------------------------
 
-The index was last updated on 2023-12-01 07:52:01.633133 MDT.
+The index was last updated on 2024-01-01 07:51:14.964642 MDT.
