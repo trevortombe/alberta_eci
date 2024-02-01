@@ -4,7 +4,7 @@ rm(list=ls(all=TRUE)) # wipes previous workspace
 # Setup the R Environment #
 ###########################
 # Common Packages
-packages<-c("curl","scales","zoo","tidyverse","tempdisagg",
+packages<-c("curl","scales","zoo","tidyverse","tempdisagg","lubridate",
             "ggseas","ggplot2","ggthemes","jsonlite","cansim",
             "data.table","rmarkdown","testit")
 check.packages <- function(pkg){
@@ -186,7 +186,7 @@ plotdata<-data.frame(Ref_Date=seq(as.yearmon("2002-01"),length.out=length(ABinde
          group=ifelse(group=="Households","Households Income/Spending",group))
 ggplot(plotdata,aes(Ref_Date,index,group=group,fill=group))+
   geom_col(position="stack",color="white",size=0.1)+
-  geom_line(aes(y=ABindex),size=1.5)+
+  geom_line(aes(y=ABindex),linewidth=1.5)+
   geom_hline(yintercept=0,size=1,color="gray50")+
   scale_fill_brewer(name="",palette="Set1")+
   mytheme+
@@ -359,10 +359,10 @@ ggplot(newdata,aes(Ref_Date))+
   geom_line(aes(y=actual,color='Actual GDP'))
 
 # Temporal Disaggregation of Annual GDP using the Activity Index
-require(readxl)
-aai<-read_excel("Data/alberta-activity-index-data-table.xlsx")
-colnames(aai)<-c("When","AAX")
-AAX_series<-ts(filter(aai,When>=as.Date("2001-01-01"))$AAX,start=2001,frequency=12)
+# require(readxl)
+# aai<-read_excel("Data/alberta-activity-index-data-table.xlsx")
+# colnames(aai)<-c("When","AAX")
+# AAX_series<-ts(filter(aai,When>=as.Date("2001-01-01"))$AAX,start=2001,frequency=12)
 GDP_series<-window(GDP,start=2001,frequency=1)
 Index_series<-ts(newdata$index,start=2001,frequency=12)
 model<-td(GDP_series~Index_series,
