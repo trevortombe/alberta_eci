@@ -229,9 +229,20 @@ plotdata2<-data.frame(Ref_Date=seq(as.yearmon("2002-01"),
   mutate(GDPGrowth=ifelse(month(Ref_Date) %in% c(1,12),NA,GDPGrowth))
 
 # Compare to Real GDP Growth Rates
-regresults<-lm(GDPGrowth~ABindex,data=plotdata2)
+regtest<-plotdata2 %>%
+  group_by(year) %>%
+  summarise(ABindex=mean(ABindex),
+            GDPGrowth=GDPGrowth[2])
+# regresults<-lm(GDPGrowth~ABindex,data=plotdata2)
+regresults<-lm(GDPGrowth~ABindex,data=regtest)
 coefficients(regresults)[1]
 coefficients(regresults)[2]
+forecast_growth<-percent(predict(regresults,newdata=filter(regtest,year==max(year))),.1)
+# regtest %>%
+#   mutate(fit=coefficients(regresults)[2]*ABindex+coefficients(regresults)[1]) %>%
+#   select(year,GDPGrowth,fit) %>%
+#   gather(type,val,-year) %>%
+#   ggplot(aes(year,val,group=type,fill=type))+geom_col(position='dodge')
 plotdata3<-plotdata2 %>%
   mutate(index=coefficients(regresults)[2]*ABindex+coefficients(regresults)[1])
 today<-max(plotdata2$Ref_Date)
@@ -240,16 +251,19 @@ col<-c("#CC2529","#396ab1","#3E9651","#DA7C30","#535154","#6B4C9A","#922428","#9
 colbar<-c("#D35E60","#7293CB","#84BA5B","#E1974C","#808585","#9067A7","#AB6857","#CCC210")
 ggplot(plotdata3,aes(Ref_Date)) +
   geom_col(aes(y=GDPGrowth),fill=colbar[2],color=colbar[2]) +
-  # geom_hline(aes(yintercept=0), colour="black", size=1) +
+  geom_hline(aes(yintercept=0), colour="black", size=1) +
   geom_line(aes(y=index),linewidth=2,color=col[1])+
   annotate('text',x=2013.5,y=-.0375,label="Actual GDP\nGrowth",
            fontface="bold",color=colbar[2])+
-  annotate('text',x=2018,y=.125,label="\"Alberta Economic\nConditions Index\"",
-           fontface="bold",color=col[1],hjust=1)+
+  annotate('text',x=2019,y=.12,label="Alberta Economic\nConditions Index",
+           fontface="bold",color=col[1])+
+  annotate('text',x=2023,y=-0.025,label=paste("Predicted 2023\ngrowth:",
+                                              forecast_growth),
+           size=3,color=col[3])+
   mytheme+
-  scale_y_continuous(breaks = pretty_breaks(8),label=percent)+
-  scale_x_continuous(expand=c(0,0),
-                     breaks=seq(2002.5,2021.75,2),
+  coord_cartesian(ylim = c(-0.09,0.12))+
+  scale_y_continuous(breaks = pretty_breaks(6),label=percent)+
+  scale_x_continuous(breaks=seq(2002.5,2021.75,2),
                      labels=seq(2002,2021,2))+
   labs(x="",y="Year-over-Year Change (%)",
        title=paste("Index of Alberta's Monthly Economic Conditions, Jan 2002 to",today),
