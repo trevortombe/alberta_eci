@@ -151,29 +151,14 @@ trucks<-p$data %>%
   rename(When=x)
 
 # Merchandise Exports
-exports_data<-getTABLE("12100119")
-exports_nonenergy<-exports_data %>%
-  filter(Trade=="Domestic export" & GEO=="Alberta" & Principal.trading.partners=="All countries" &
-           (NAPCS=="Total of all merchandise" | NAPCS=="Energy products")) %>%
-  mutate(NAPCS=replace(NAPCS,NAPCS=="Total of all merchandise","Other Goods"),
-         NAPCS=replace(NAPCS,NAPCS=="Energy products","Energy Products")) %>%
-  group_by(Ref_Date,GEO) %>%
-  mutate(energy=max(Value*(NAPCS=="Energy Products")),
-         net=ifelse(NAPCS=="Energy Products",Value,Value-energy)) %>%
-  ungroup() %>%
-  filter(NAPCS=="Other Goods") %>%
-  select(When=Ref_Date,exports_nonenergy=Value)
-exports_energy<-exports_data %>%
-  filter(Trade=="Domestic export" & GEO=="Alberta" & Principal.trading.partners=="All countries" &
-           (NAPCS=="Total of all merchandise" | NAPCS=="Energy products")) %>%
-  mutate(NAPCS=replace(NAPCS,NAPCS=="Total of all merchandise","Other Goods"),
-         NAPCS=replace(NAPCS,NAPCS=="Energy products","Energy Products")) %>%
-  group_by(Ref_Date,GEO) %>%
-  mutate(energy=max(Value*(NAPCS=="Energy Products")),
-         net=ifelse(NAPCS=="Energy Products",Value,Value-energy)) %>%
-  ungroup() %>%
-  filter(NAPCS=="Energy Products") %>%
-  select(When=Ref_Date,exports_energy=Value)
+exports_energy<-get_cansim_vector('v1567090501') %>%
+  select(When=Date,exports_energy=VALUE)
+exports<-get_cansim_vector('v1567090443') %>%
+  select(When=Date,exports=VALUE)
+exports_nonenergy<-exports %>%
+  left_join(exports_energy,by="When") %>%
+  mutate(exports_nonenergy=exports-exports_energy) %>%
+  select(When,exports_nonenergy)
 
 # Wells Drilled, with Seasonal Adjustment
 well_url<-'https://api.economicdata.alberta.ca/api/data?code=f4a8bd80-ec75-4432-ab5e-a15add01e5cd'

@@ -187,7 +187,7 @@ plotdata<-data.frame(Ref_Date=seq(as.yearmon("2002-01"),length.out=length(ABinde
 ggplot(plotdata,aes(Ref_Date,index,group=group,fill=group))+
   geom_col(position="stack",color="white",size=0.1)+
   geom_line(aes(y=ABindex),linewidth=1.5)+
-  geom_hline(yintercept=0,size=1,color="gray50")+
+  geom_hline(yintercept=0,linewidth=1,color="gray50")+
   scale_fill_brewer(name="",palette="Set1")+
   mytheme+
   scale_x_continuous(expand=c(0,0),breaks=pretty_breaks(n=8),
@@ -209,6 +209,8 @@ The index is constructed to have mean zero and unit variance. A value of +1 mean
        caption="Sources: Own calculatons from various Statistics Canada data tables. Graph by @trevortombe.
 It is the 1st principal component from several dozen monthly data series. Based on the Chicago Fed National Activity Index.")
 ggsave("Figures/plot.png",width=8,height=4.5,dpi=200)
+
+print("Completed main figure")
 
 # Aggregate by Year
 plotdata2<-data.frame(Ref_Date=seq(as.yearmon("2002-01"),
@@ -239,7 +241,7 @@ colbar<-c("#D35E60","#7293CB","#84BA5B","#E1974C","#808585","#9067A7","#AB6857",
 ggplot(plotdata3,aes(Ref_Date)) +
   geom_col(aes(y=GDPGrowth),fill=colbar[2],color=colbar[2]) +
   # geom_hline(aes(yintercept=0), colour="black", size=1) +
-  geom_line(aes(y=index),size=2,color=col[1])+
+  geom_line(aes(y=index),linewidth=2,color=col[1])+
   annotate('text',x=2013.5,y=-.0375,label="Actual GDP\nGrowth",
            fontface="bold",color=colbar[2])+
   annotate('text',x=2018,y=.125,label="\"Alberta Economic\nConditions Index\"",
@@ -289,7 +291,7 @@ plotdata4<-p$data %>%
   summarise(index=sum(y)) %>%
   select(Ref_Date=x,index)
 ggplot(plotdata4,aes(Ref_Date,index))+
-  geom_line(size=2,color=col[1])
+  geom_line(linewidth=2,color=col[1])
 
 plotdata5<-data.frame(Ref_Date=seq(as.yearmon("2001-01"),
                                    length.out=length(labdata_ab$index),
@@ -389,7 +391,7 @@ p<-ggplot(testplot %>% filter(Ref_Date>="Jan 2005"),aes(Ref_Date,annualized/1000
            ymin=-Inf, ymax=+Inf, alpha=0.2, fill="dodgerblue")+
   annotate("text",x=2014.6,hjust=1,y=Inf,vjust=1,alpha=0.5,
            label="Recessions",color="dodgerblue",size=2.5)+
-  geom_line(size=2,color=col[1])+
+  geom_line(linewidth=2,color=col[1])+
   geom_point(data=filter(testplot,Ref_Date==max(Ref_Date)),
              stroke=2.5,size=2.5,shape=21,fill='white',color=col[1])+
   mytheme+
