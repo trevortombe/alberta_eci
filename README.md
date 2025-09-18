@@ -23,4 +23,4 @@ The latest ECI for Jun 2025 is -0.06. The full time series since Jan
 
 ------------------------------------------------------------------------
 
-The index was last updated on 2025-09-18 14:37:29.836425 MDT.
+The index was last updated on 2025-09-18 14:41:21.983028 MDT.
