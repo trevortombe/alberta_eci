@@ -45,7 +45,7 @@ vehicles<-get_cansim_vector('v1617815652') %>%
   select(When=Date,vehicles=VALUE) %>%
   mutate(When=as.yearmon(When))
 p<-ggsdc(vehicles, aes(x = When, y = vehicles),frequency=12,method = "seas") + geom_line()
-vehicles<-p$data %>% 
+vehicles2<-p$data %>% 
   filter(component=="trend" | component=="irregular") %>% 
   group_by(x) %>%
   summarise(vehicles=sum(y)) %>%
