@@ -40,8 +40,8 @@ employment<-get_cansim_vector('v2064512') %>%
 self_emp<-get_cansim_vector('v2067016') %>%
   select(When=Date,self_emp=VALUE)
 
-# Vehicle Sales: 20-10-0001-01, then seasonal adjust
-vehicles<-get_cansim_vector('v42169942') %>%
+# Vehicle Sales: 20-10-0085-01, then seasonal adjust
+vehicles<-get_cansim_vector('v1617815652') %>%
   select(When=Date,vehicles=VALUE) %>%
   mutate(When=as.yearmon(When))
 p<-ggsdc(vehicles, aes(x = When, y = vehicles),frequency=12,method = "seas") + geom_line()
@@ -53,9 +53,9 @@ vehicles<-p$data %>%
   mutate(When=as.Date(When))
 
 # Merchandise Exports: 12-10-0119-01
-exports_energy<-get_cansim_vector('v1001819843') %>%
+exports_energy<-get_cansim_vector('v1567090501') %>%
   select(When=Date,exports_energy=VALUE)
-exports<-get_cansim_vector('v1001819785') %>%
+exports<-get_cansim_vector('v1567090443') %>%
   select(When=Date,exports=VALUE)
 exports_nonenergy<-exports %>%
   left_join(exports_energy,by="When") %>%

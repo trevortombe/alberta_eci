@@ -154,7 +154,7 @@ plotdata2<-data.frame(Ref_Date=seq(as.yearmon("2002-01"),
                                    by=1/12)) %>%
   cbind(ABindex) %>%
   filter(Ref_Date>="Jan 2002") %>%
-  mutate(year=year(Ref_Date)) %>%
+  mutate(year=year(as.Date(Ref_Date))) %>%
   left_join(
     data.frame(GDP) %>% 
       mutate(GDP=as.numeric(GDP)) %>%
@@ -162,7 +162,7 @@ plotdata2<-data.frame(Ref_Date=seq(as.yearmon("2002-01"),
       mutate(GDPGrowth=(GDP/lag(GDP,1)-1)) %>%
       select(year,GDPGrowth,GDP),by="year"
   ) %>%
-  mutate(GDPGrowth=ifelse(month(Ref_Date) %in% c(1,12),NA,GDPGrowth))
+  mutate(GDPGrowth=ifelse(month(as.Date(Ref_Date)) %in% c(1,12),NA,GDPGrowth))
 
 # Compare to Real GDP Growth Rates
 regresults<-lm(GDPGrowth~ABindex,data=plotdata2)
@@ -211,12 +211,12 @@ labdata_ab<-get_cansim_vector('v1996500') %>%
   select(Ref_Date,index=relative)
 labdata_ab<-labdata_ab %>%
   mutate(index=1) %>%
-  rbind(plotdata3 %>% select(Ref_Date,index) %>% filter(year(Ref_Date)==2002)) %>%
-  mutate(index=ifelse(year(Ref_Date)==2002,lag(index,12)*(1+index),index))
-for (y in seq(2003,year(max(plotdata3$Ref_Date)))){
+  rbind(plotdata3 %>% select(Ref_Date,index) %>% filter(year(as.Date(Ref_Date))==2002)) %>%
+  mutate(index=ifelse(year(as.Date(Ref_Date))==2002,lag(index,12)*(1+index),index))
+for (y in seq(2003,year(max(as.Date(plotdata3$Ref_Date))))){
   labdata_ab<-labdata_ab %>%
-    rbind(plotdata3 %>% select(Ref_Date,index) %>% filter(year(Ref_Date)==y)) %>%
-    mutate(index=ifelse(year(Ref_Date)==y,lag(index,12)*(1+index),index))
+    rbind(plotdata3 %>% select(Ref_Date,index) %>% filter(year(as.Date(Ref_Date))==y)) %>%
+    mutate(index=ifelse(year(as.Date(Ref_Date))==y,lag(index,12)*(1+index),index))
 }
 p<-ggsdc(labdata_ab, aes(x = Ref_Date, y = index), method = "seas") + geom_line()
 index_levels<-p$data %>%
@@ -236,7 +236,7 @@ plot(model)
 plot(predict(model))
 testplot<-index_levels %>% 
   cbind(data.frame(monthly_gdp=predict(model))) %>%
-  mutate(year=year(Ref_Date)) %>%
+  mutate(year=year(as.Date(Ref_Date))) %>%
   group_by(year) %>%
   mutate(GDPtest=sum(monthly_gdp),
          annualized=monthly_gdp*12) %>% ungroup()
