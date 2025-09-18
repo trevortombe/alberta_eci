@@ -218,12 +218,10 @@ for (y in seq(2003,year(max(as.Date(plotdata3$Ref_Date))))){
     rbind(plotdata3 %>% select(Ref_Date,index) %>% filter(year(as.Date(Ref_Date))==y)) %>%
     mutate(index=ifelse(year(as.Date(Ref_Date))==y,lag(index,12)*(1+index),index))
 }
-p<-ggsdc(labdata_ab, aes(x = Ref_Date, y = index), method = "seas") + geom_line()
-index_levels<-p$data %>%
-  filter(component=="trend" | component=="irregular") %>%
-  group_by(x) %>%
-  summarise(index=sum(y)) %>%
-  select(Ref_Date=x,index)
+
+# Seasonally adjust the labour compensation data using the `seasonal` package
+index_levels<-labdata_ab %>%
+  mutate(index=as.numeric(predict(seas(ts(index,frequency=12,start=c(min(year(as.Date(Ref_Date))),1))))))
 
 # Temporal Disaggregation of Annual GDP
 GDP_series<-window(GDP,start=2001,frequency=1)
