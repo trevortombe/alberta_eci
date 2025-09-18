@@ -14,6 +14,7 @@ check.packages <- function(pkg){
   sapply(pkg, require, character.only = TRUE)
 }
 check.packages(packages)
+install.packages("ggseas")
 
 # Useful lists
 provinces<-c("Canada","Newfoundland and Labrador","Prince Edward Island","Nova Scotia",
