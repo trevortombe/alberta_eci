@@ -5,7 +5,7 @@ rm(list=ls(all=TRUE)) # wipes previous workspace
 ###########################
 # Common Packages
 packages<-c("curl","scales","zoo","tidyverse","tempdisagg","lubridate",
-            "ggseas","ggplot2","ggthemes","jsonlite","cansim",
+            "seasonal","ggplot2","ggthemes","jsonlite","cansim",
             "data.table","rmarkdown","testit","devtools")
 check.packages <- function(pkg){
   new.pkg <- pkg[!(pkg %in% installed.packages()[, "Package"])]
