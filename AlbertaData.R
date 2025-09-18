@@ -43,9 +43,7 @@ self_emp<-get_cansim_vector('v2067016') %>%
 # Vehicle Sales: 20-10-0085-01, then seasonal adjust using the `seasonal` package
 vehicles<-get_cansim_vector('v1617815652') %>%
   select(When=Date,vehicles=VALUE) %>%
-  mutate(When=as.yearmon(When))
-vehicles<-vehicles %>%
-  cbind(vehicles=predict(seas(ts(vehicles$vehicles,frequency=12,start=c(min(year(as.Date(vehicles$When))),1)))))
+  mutate(vehicles=as.numeric(predict(seas(ts(vehicles,frequency=12,start=c(min(year(as.Date(When))),1))))))
 
 # Merchandise Exports: 12-10-0119-01
 exports_energy<-get_cansim_vector('v1567090501') %>%
