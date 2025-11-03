@@ -56,7 +56,7 @@ source("AlbertaData.R")
 ####################
 
 # Define groups of variables
-egy_vars=c("oil","rigs","exports_energy")
+egy_vars=c("oil","exports_energy") # previously included rigs; API removed from AB dashboard
 biz_vars=c("mfg","trade","exports_nonenergy","self_emp")
 lab_vars=c("employment","hours")
 # con_vars=c("earnings","retail","vehicles")

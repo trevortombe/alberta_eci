@@ -56,9 +56,10 @@ exports_nonenergy<-exports %>%
   select(When,exports_nonenergy)
 
 # Oil Production
-oil_url<-'https://api.economicdata.alberta.ca/api/data?code=b0881da3-704c-42b9-a429-c8eff0ec5c73'
+oil_url<-'https://api.economicdata.alberta.ca/api/data?code=3caa6978-9647-4eb3-8de8-34a3abc06427'
 oil<-fromJSON(oil_url) %>%
   mutate(When=as.yearmon(Date)) %>%
+  filter(Type=="Total oil production") %>%
   select(When,oil=Value)
 oldoil<-read.csv("Data/old_oil.csv") %>% 
   mutate(When=as.yearmon(Date,"%b-%y")) %>% 
@@ -83,10 +84,10 @@ hours<-get_cansim_vector('v54027409') %>%
   select(When=Date,hours=VALUE)
 
 ## Active drilling rigs
-rig_url<-'https://api.economicdata.alberta.ca/api/data?code=9442d479-7ad6-47b6-aa12-ef03c750a50d'
-rigs<-fromJSON(rig_url) %>%
-  mutate(When=as.Date(Date)) %>%
-  select(When,rigs=Value)
+# rig_url<-'https://api.economicdata.alberta.ca/api/data?code=9442d479-7ad6-47b6-aa12-ef03c750a50d'
+# rigs<-fromJSON(rig_url) %>%
+#   mutate(When=as.Date(Date)) %>%
+#   select(When,rigs=Value)
 
 ## Consumer Price Index Data: 18-10-0004-01
 deflate<-get_cansim_vector('v41692327') %>%
