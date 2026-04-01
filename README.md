@@ -13,8 +13,8 @@ file is run, manual entry of data may be required (for example, wells
 drilled). Third, “ECI.R” estimates the first principle component from
 this data and generates the visualization.
 
-The latest ECI for Nov 2025 is -0.08. The full time series since Jan
-2002 is plotted below:
+The latest ECI for Jan 2026 is -0.5. The full time series since Jan 2002
+is plotted below:
 
 <figure>
 <img src="Figures/plot.png" alt="Alberta ECI" />
@@ -23,4 +23,4 @@ The latest ECI for Nov 2025 is -0.08. The full time series since Jan
 
 ------------------------------------------------------------------------
 
-The index was last updated on 2026-02-01 07:58:07.334214 MDT.
+The index was last updated on 2026-04-01 09:57:13.679798 MDT.
