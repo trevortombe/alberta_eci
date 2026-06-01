@@ -18,8 +18,8 @@ file is run, manual entry of data may be required (for example, wells
 drilled). Third, “ECI.R” estimates the first principle component from
 this data and generates the visualization.
 
-The latest ECI for Feb 2026 is -0.4. The full time series since Jan 2002
-is plotted below:
+The latest ECI for Mar 2026 is -0.22. The full time series since Jan
+2002 is plotted below:
 
 <figure>
 <img src="Figures/plot.png" alt="Alberta ECI" />
@@ -28,4 +28,4 @@ is plotted below:
 
 ------------------------------------------------------------------------
 
-The index was last updated on 2026-05-01 09:38:05.209807 MDT.
+The index was last updated on 2026-06-01 13:32:21.881875 MDT.
