@@ -1,5 +1,5 @@
 # This updates the Alberta realtime budget projection daily
-name: UpdateECI
+name: UpdateBudget
 on:
   schedule:
     - cron: '0 14 * * *'
