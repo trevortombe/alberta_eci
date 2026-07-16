@@ -261,8 +261,8 @@ ab_oil_tracker <- function(today = Sys.Date(),
 
 sf <- 10   # adjust if needed for visual balance
 adjust<-0 # amount to lower oil prices relative to futures (which are delayed)
-top_range=floor(max(filter(df,!is.na(settle))$settle)*1.2/10)*10
-bot_range=floor(max(filter(df,!is.na(settle))$settle)*0.8/10)*10
+top_range=ceiling(filter(combined,label==max(label))$wti*1.2/10)*10
+bot_range=floor(filter(combined,label==max(label))$wti*0.8/10)*10
 results2 <- ab_oil_tracker()
 s <- results2$summary
 df <- results2$data
