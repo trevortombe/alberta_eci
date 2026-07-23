@@ -89,6 +89,10 @@ for (sym in contracts) {
   })
 }
 
+# If leading month is NA
+results<-results %>%
+  mutate(settle=ifelse(is.na(settle) & row_number()==1,settle[2],settle))
+
 # Fiscal year dates (Apr 1 to Mar 31)
 fy_start <- if (month(today()) >= 4){
   as.Date(sprintf("%d-04-01", year(today())))
@@ -262,7 +266,7 @@ ab_oil_tracker <- function(today = Sys.Date(),
 sf <- 10   # adjust if needed for visual balance
 adjust<-0 # amount to lower oil prices relative to futures (which are delayed)
 top_range=ceiling(filter(combined,label==max(label))$wti*1.2/10)*10
-bot_range=floor(filter(combined,label==max(label))$wti*0.8/10)*10
+bot_range=round(filter(combined,label==max(label))$wti*0.8/10)*10
 results2 <- ab_oil_tracker()
 s <- results2$summary
 df <- results2$data
