@@ -18,7 +18,7 @@ file is run, manual entry of data may be required (for example, wells
 drilled). Third, “ECI.R” estimates the first principle component from
 this data and generates the visualization.
 
-The latest ECI for Apr 2026 is 0.67. The full time series since Jan 2002
+The latest ECI for May 2026 is 1.18. The full time series since Jan 2002
 is plotted below:
 
 <figure>
@@ -28,4 +28,4 @@ is plotted below:
 
 ------------------------------------------------------------------------
 
-The index was last updated on 2026-07-01 10:58:41.688544 MDT.
+The index was last updated on 2026-08-01 09:42:04.088186 MDT.
