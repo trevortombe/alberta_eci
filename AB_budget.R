@@ -375,8 +375,9 @@ ggplot(df %>% filter(phase=="Actual/YTD"), aes(x = date)) +
   )+
   geom_text(
     data = df %>% filter(phase == "Actual/YTD") %>% slice_max(date, n = 1),
-    aes(y = 125,x=today()+5,hjust = 0, size = 2.75,color=col[3],
-        label = paste0("Needed to balance over the\nrest of the fiscal year: ", dollar(to_balance_remain,2),"/bbl"))
+    aes(y = 125,x=today()+5,
+        label = paste0("Needed to balance over the\nrest of the fiscal year: ", dollar(to_balance_remain,2),"/bbl")),
+    hjust = 0, size = 2.75,color=col[3]
   )
 ggsave("Figures/BudgetBalanceProjection.png",width=9,height=4.5)
 
