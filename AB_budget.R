@@ -115,13 +115,12 @@ combined<-wti_df %>%
                     select(label,wti=settle)))
 
 # Waterfall graphic, changes in OpEx for 2026-27 vs Budget 2024
-futures_average<-mean(c(wti_df$wti,as.numeric(Cl(wti[dim(wti)[1]])),
-                             results$settle))
+futures_average<-mean(combined$wti)
 plotdata<-data.frame(
   type=c("Budget 2026\nDeficit",
-         paste("Oil prices\naverage",dollar(mean(combined$wti))),
+         paste("Oil prices\naverage",dollar(futures_average)),
          "Revised\nBudget 2026\nBalance"),
-  value=c(-9373,680*(mean(combined$wti)-60.5),680*(mean(combined$wti)-60.5)-9373)/1000
+  value=c(-9373,700*(futures_average-60.5),700*(futures_average-60.5)-9373)/1000
 ) %>%
   mutate(type=factor(type,levels=type),
          id=seq_along(value),
@@ -283,7 +282,7 @@ ggplot(df %>% filter(phase=="Actual/YTD"), aes(x = date)) +
            width = 1, alpha = 0.75, show.legend = F) +
   scale_fill_manual(values = c(`FALSE` = col[1], `TRUE` = col[2]))+
   geom_line(aes(y=cum_balance * sf / 1e9),linewidth=1.5)+
-  geom_line(data=df %>% filter(!is.na(settle)) %>% ungroup() %>%
+  geom_line(data=df %>% filter(date>=as.Date(as.yearmon(s$today)+1/12)) %>% ungroup() %>%
               mutate(cum_balance_settle=ifelse(date==min(date),cum_balance,daily_balance_settle),
                      cum_balance_settle=cumsum(cum_balance_settle)),
             aes(y=cum_balance_settle * sf / 1e9),linewidth=1,linetype='dotted')+
@@ -295,12 +294,10 @@ ggplot(df %>% filter(phase=="Actual/YTD"), aes(x = date)) +
         label = paste0("YTD: ", dollar(cum_balance / 1e9, suffix = "B", accuracy = 0.1),"\n(right axis)")),
     nudge_x = 5, vjust=1, nudge_y=-5,hjust = 0, size = 3
   ) +
-  geom_text(
-    data = df %>% slice_max(date, n = 1),
-    aes(y = (-9.373) * sf,
-        label = "Budget\nforecast: -$9.4B"),
-    nudge_x = 10,hjust = 0, size = 3, colour = col[4]
-  )+
+  geom_text(data = df %>% slice_max(date, n = 1),nudge_x = 10,hjust = 0, size = 2.5, colour = col[4],
+            aes(y = (2.041) * sf,label = "Q1 update: $2.0B"))+
+  geom_text(data = df %>% slice_max(date, n = 1),nudge_x = 10,hjust = 0, size = 2.5, colour = col[4],
+            aes(y = (-9.373) * sf,label = "Budget\nforecast: -$9.4B"))+
   mytheme +
   scale_y_continuous(
     labels = dollar,breaks=pretty_breaks(6),
@@ -324,6 +321,9 @@ ggplot(df %>% filter(phase=="Actual/YTD"), aes(x = date)) +
                       cum_balance_settle=cumsum(cum_balance_settle)) %>% 
                slice_max(date, n = 1),
              aes(y = (cum_balance_settle *sf / 1e9)),
+             size=2.5,stroke=2.5,shape=21,fill='white')+
+  geom_point(data = df %>% slice_max(date, n = 1),
+             aes(y = (2.041 *sf )),colour = col[4],
              size=2.5,stroke=2.5,shape=21,fill='white')+
   geom_point(data = df %>% slice_max(date, n = 1),
              aes(y = (-9.373 *sf )),colour = col[4],
