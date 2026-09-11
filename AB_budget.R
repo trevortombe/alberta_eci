@@ -297,7 +297,7 @@ ggplot(df %>% filter(phase=="Actual/YTD"), aes(x = date)) +
   geom_text(data = df %>% slice_max(date, n = 1),nudge_x = 10,hjust = 0, size = 2.5, colour = col[4],
             aes(y = (2.041) * sf,label = "Q1 update: $2.0B"))+
   geom_text(data = df %>% slice_max(date, n = 1),nudge_x = 10,hjust = 0, size = 2.5, colour = col[4],
-            aes(y = (-9.373) * sf,label = "Budget\nforecast: -$9.4B"))+
+            aes(y = (-9.373) * sf,label = "Budget: -$9.4B"))+
   mytheme +
   scale_y_continuous(
     labels = dollar,breaks=pretty_breaks(6),
