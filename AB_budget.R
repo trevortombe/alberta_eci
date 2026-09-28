@@ -271,9 +271,10 @@ s <- results2$summary
 df <- results2$data
 fan_df <- results2$fan_data
 fan_end <- fan_df %>% slice_max(date, n = 1)
-futures_proj<-df %>% filter(!is.na(settle)) %>% ungroup() %>%
+futures_proj_curve <- df %>% filter(!is.na(settle)) %>% ungroup() %>%
   mutate(cum_balance_settle=ifelse(date==min(date),cum_balance,daily_balance_settle),
-         cum_balance_settle=cumsum(cum_balance_settle)) %>% 
+         cum_balance_settle=cumsum(cum_balance_settle))
+futures_proj<-futures_proj_curve %>% 
   slice_max(date, n = 1)
 to_balance_remain<-bot_range-fan_end$cum_low/(700e6*as.numeric((fan_end$date-Sys.Date())/365))
 ggplot(df %>% filter(phase=="Actual/YTD"), aes(x = date)) +
@@ -282,9 +283,7 @@ ggplot(df %>% filter(phase=="Actual/YTD"), aes(x = date)) +
            width = 1, alpha = 0.75, show.legend = F) +
   scale_fill_manual(values = c(`FALSE` = col[1], `TRUE` = col[2]))+
   geom_line(aes(y=cum_balance * sf / 1e9),linewidth=1.5)+
-  geom_line(data=df %>% filter(date>=as.Date(as.yearmon(s$today)+1/12)) %>% ungroup() %>%
-              mutate(cum_balance_settle=ifelse(date==min(date),cum_balance,daily_balance_settle),
-                     cum_balance_settle=cumsum(cum_balance_settle)),
+  geom_line(data=futures_proj_curve,
             aes(y=cum_balance_settle * sf / 1e9),linewidth=1,linetype='dotted')+
   geom_hline(yintercept = 0, linewidth=0.75)+
   geom_vline(xintercept = s$today, linetype = "dashed") +
@@ -316,10 +315,7 @@ ggplot(df %>% filter(phase=="Actual/YTD"), aes(x = date)) +
     alpha = 0.18,
     fill = "darkgreen"
   )+
-  geom_point(data = df %>% filter(!is.na(settle)) %>% ungroup() %>%
-               mutate(cum_balance_settle=ifelse(date==min(date),cum_balance,daily_balance_settle),
-                      cum_balance_settle=cumsum(cum_balance_settle)) %>% 
-               slice_max(date, n = 1),
+  geom_point(data = futures_proj,
              aes(y = (cum_balance_settle *sf / 1e9)),
              size=2.5,stroke=2.5,shape=21,fill='white')+
   geom_point(data = df %>% slice_max(date, n = 1),
@@ -380,5 +376,3 @@ ggplot(df %>% filter(phase=="Actual/YTD"), aes(x = date)) +
     hjust = 0, size = 2.75,color=col[3]
   )
 ggsave("Figures/BudgetBalanceProjection.png",width=9,height=4.5)
-
-
