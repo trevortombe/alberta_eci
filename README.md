@@ -1,31 +1,23 @@
-# Constructs Monthly Index of Economic Conditions in Alberta
+# Monthly Index of Economic Conditions in Alberta
 
-The following compiles monthly data from a variety of courses to
-estimate real-time economic conditions in Alberta. It closely follows,
-as much as the data allows, the Chicago Fed National Activity Index.
-<https://www.chicagofed.org/publications/cfnai/index>
+This repository compiles monthly data from a variety of Statistics Canada sources to estimate real-time economic conditions in Alberta. It closely follows, as much as the data allows, the Chicago Fed National Activity Index: <https://www.chicagofed.org/publications/cfnai/index>
 
-For comparison, the Government of Alberta maintains a separate “Alberta
-Activity Index” here: <https://www.alberta.ca/alberta-activity-index>.
+For comparison, the Government of Alberta maintains a separate "Alberta Activity Index": <https://www.alberta.ca/alberta-activity-index>.
 
 ## Contents of the repository
 
-There are three R files necessary to construct the Economic Conditions
-Index. First “core.R” loads packages, functions, themes, and other
-useful objects. Second, “ECI\_data.R” downloads the processes the
-necessary data from various sources. Note that depending on the day this
-file is run, manual entry of data may be required (for example, wells
-drilled). Third, “ECI.R” estimates the first principle component from
-this data and generates the visualization.
+- `AlbertaData.R` downloads only the series the index uses, in a single request to Statistics Canada's Web Data Service.
+- `AlbertaECI.R` estimates the index (the first principal component of year-over-year changes in 12 monthly indicators), draws the figures, and produces experimental monthly real GDP estimates benchmarked to annual GDP from table 36-10-0711.
+- `Data/ECI_Index_Data.csv` is the index and its components; `Data/Monthly_GDP_Estimates.csv` is the monthly real GDP series. Earlier releases are kept in `Data/vintages/`.
 
-The latest ECI for Aug 2026 is 0.99. The full time series since Jan 2002
-is plotted below:
+Recent months are published once at least half of the index weight has been released; those months are flagged as preliminary and will be revised as the remaining data arrive.
 
-<figure>
-<img src="Figures/plot.png" alt="Alberta ECI" />
-<figcaption aria-hidden="true">Alberta ECI</figcaption>
-</figure>
+The latest ECI for Sep 2026 is 1.06 (preliminary: not all series have been released for this month). The full time series since Jan 2002 is plotted below:
+
+![Alberta ECI](Figures/plot.png)
+
+![Monthly real GDP](Figures/MonthlyGDP_Experimental.png)
 
 ------------------------------------------------------------------------
 
-The index was last updated on 2026-11-20 08:50:28.514107 MDT.
+The index was last updated on November 20, 2026 at 10:51 CST.

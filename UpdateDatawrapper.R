@@ -17,7 +17,7 @@ datawrapper_auth(api_key = Sys.getenv("DATAWRAPPERAUTH"))
 eci<-"fIIKi"
 
 # Fetch the ECI Data
-latestECI<-read.csv('https://github.com/trevortombe/alberta_eci/raw/master/ECI_Index_Data.csv')
+latestECI<-read.csv('https://github.com/trevortombe/alberta_eci/raw/master/Data/ECI_Index_Data.csv')
 end_x_year<-as.character(as.numeric(substr(as.character(latestECI[dim(latestECI)[1],1]),5,8))+2.5)
 
 # Adjust the title and the position of the annotation
