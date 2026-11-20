@@ -2,7 +2,7 @@
 name: UpdateBudget
 on:
   schedule:
-    - cron: '0 14 * * *'
+    - cron: '45 21 * * *'   # after NYMEX settlement and the daily Reuters WCS report
   workflow_dispatch:
 jobs:
   build:
@@ -17,6 +17,6 @@ jobs:
         run: |
           git config --global user.email "trevor.tombe@gmail.com"
           git config --global user.name "Trevor Tombe"
-          git add '*.png'
+          git add '*.png' Data/wcs_differential.csv
           git commit -m "Update All Plots" || echo "No changes to commit"
           git push origin || echo "No changes to commit"
