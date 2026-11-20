@@ -1,0 +1,47 @@
+set,sector,vector
+alberta_annual,Accommodation and food services,1793287952
+alberta_annual,"Administrative and support, waste management and remediation services",1793287925
+alberta_annual,"Agriculture, forestry, fishing and hunting",1793287733
+alberta_annual,All industries,1793287969
+alberta_annual,"Arts, entertainment and recreation",1793287947
+alberta_annual,Construction,1793287773
+alberta_annual,Educational services,1793287936
+alberta_annual,Finance and insurance,1793287893
+alberta_annual,Health care and social assistance,1793287941
+alberta_annual,Information and cultural industries,1793287879
+alberta_annual,Management of companies and enterprises,1793287924
+alberta_annual,Manufacturing,1793287837
+alberta_annual,"Mining, quarrying, and oil and gas extraction",1793287749
+alberta_annual,Oil and gas extraction,1793287750
+alberta_annual,Other services (except public administration),1793287955
+alberta_annual,"Professional, scientific and technical services",1793287912
+alberta_annual,Public administration,1793287962
+alberta_annual,Real estate and rental and leasing,1793287902
+alberta_annual,Retail trade,1793287876
+alberta_annual,"Support activities for mining, and oil and gas extraction",1793287766
+alberta_annual,Transportation and warehousing,1793287878
+alberta_annual,Utilities,1793287769
+alberta_annual,Wholesale trade,1793287838
+canada_monthly,Accommodation and food services,65201468
+canada_monthly,"Administrative and support, waste management and remediation services",65201442
+canada_monthly,"Agriculture, forestry, fishing and hunting",65201229
+canada_monthly,All industries,65201210
+canada_monthly,"Arts, entertainment and recreation",65201463
+canada_monthly,Construction,65201258
+canada_monthly,Educational services,65201452
+canada_monthly,Finance and insurance,65201407
+canada_monthly,Health care and social assistance,65201457
+canada_monthly,Information and cultural industries,65201398
+canada_monthly,Management of companies and enterprises,65201441
+canada_monthly,Manufacturing,65201263
+canada_monthly,"Mining, quarrying, and oil and gas extraction",65201236
+canada_monthly,Oil and gas extraction,65201237
+canada_monthly,Other services (except public administration),65201471
+canada_monthly,"Professional, scientific and technical services",65201429
+canada_monthly,Public administration,65201476
+canada_monthly,Real estate and rental and leasing,65201419
+canada_monthly,Retail trade,65201368
+canada_monthly,"Support activities for mining, and oil and gas extraction",65201253
+canada_monthly,Transportation and warehousing,65201381
+canada_monthly,Utilities,65201254
+canada_monthly,Wholesale trade,65201358

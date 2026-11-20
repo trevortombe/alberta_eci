@@ -1,96 +1,141 @@
-########################
-# Gather the core data #
-########################
+########################################################################
+# Gather the data for the Alberta Economic Conditions Index (ECI)
+#
+# Everything comes from Statistics Canada in ONE batched request to the
+# Web Data Service (WDS), asking only for the vectors we use. No full-table
+# downloads, no {cansim} dependency, and no non-StatCan APIs.
+#
+# Creates:
+#   monthly     one row per month, one column per indicator (real, SA)
+#   gdp_annual  Alberta real GDP at basic prices (36-10-0711), by year
+#   releases    last available month for each indicator
+########################################################################
 
-# Manufacturing: 16-10-0048-01
-mfg<-get_cansim_vector('v807466') %>%
-  select(When=Date,mfg=VALUE)
+# StatCan vectors used directly (table in comments)
+vectors <- c(
+  mfg            = "807466",     # 16-10-0048 Manufacturing sales, SA
+  trade          = "52367703",   # 20-10-0074 Wholesale trade, SA
+  retail_old     = "52367215",   # 20-10-0008 Retail sales, SA (to 2022)
+  retail_new     = "1446859973", # 20-10-0056 Retail sales, SA (2017+)
+  food           = "42170714",   # 21-10-0019 Food services and drinking places receipts, SA
+  housing        = "52299962",   # 34-10-0156 Housing starts
+  vehicles       = "1617815652", # 20-10-0085 New motor vehicle sales, units, NSA
+  exports        = "1567090443", # 12-10-0175 Domestic merchandise exports, all products
+  exports_energy = "1567090501", # 12-10-0175 Domestic merchandise exports, energy products
+  employment     = "2064512",    # 14-10-0287 LFS employment, SA
+  seph           = "79311016",   # 14-10-0223 SEPH payroll employment, SA
+  earnings       = "79311387",   # 14-10-0223 SEPH average weekly earnings, SA
+  oil_old        = "18050",      # 25-10-0014 Crude oil production (1985 to Feb 2016)
+  oil_new        = "107757710",  # 25-10-0063 Crude oil production, m3 (2016+)
+  cpi            = "41692327",   # 18-10-0004 Alberta CPI, all-items
+  gdp            = "1793287969"  # 36-10-0711 Alberta real GDP at basic prices (annual)
+)
+# National monthly GDP by industry (36-10-0434) and Alberta annual GDP by industry (36-10-0711)
+industry_vectors <- read.csv("Data/industry_vectors.csv", colClasses = "character")
 
-# Wholesale Trade: 20-10-0074-01
-trade<-get_cansim_vector('v52367703') %>%
-  select(When=Date,trade=VALUE)
+# One request for everything (about 60 series; takes a few seconds)
+all_ids <- unique(c(vectors, industry_vectors$vector))
+url <- paste0("https://www150.statcan.gc.ca/t1/wds/rest/getDataFromVectorByReferencePeriodRange?vectorIds=",
+              URLencode(paste0('"', all_ids, '"', collapse = ","), reserved = TRUE),
+              "&startRefPeriod=1999-01-01&endReferencePeriod=2100-01-01")
+response <- fromJSON(url, simplifyVector = FALSE)
+raw <- bind_rows(lapply(response, function(x) tibble(
+  vector = as.character(x$object$vectorId),
+  When   = as.Date(sapply(x$object$vectorDataPoint, `[[`, "refPer")),
+  value  = sapply(x$object$vectorDataPoint, function(p) if (is.null(p$value)) NA_real_ else p$value))))
+stopifnot(all(all_ids %in% raw$vector))  # fail loudly if StatCan drops or renames a vector
+raw <- raw %>% filter(!is.na(value))
+get_series <- function(nm) raw %>% filter(vector == vectors[[nm]]) %>% select(When, value) %>% arrange(When)
 
-# Housing Starts": 34-10-0143-01 -- error in the cansim table on Nov 1, 2023
-# housing<-get_cansim_vector('v729967') %>%
-#   select(When=Date,housing=VALUE)
-housing<-get_cansim_vector('v52299962') %>% # table 34-10-0156-01
-  select(When=Date,housing=VALUE)
+#######################
+# Build each indicator #
+#######################
 
-# Average weekly earnings: 14-10-0223-01
-earnings<-get_cansim_vector('v79311387') %>%
-  select(When=Date,earnings=VALUE)
+# Retail sales: splice the old series onto the new one at the first overlapping month
+retail_old <- get_series("retail_old")
+retail_new <- get_series("retail_new")
+splice <- retail_new$value[1] / retail_old$value[retail_old$When == retail_new$When[1]]
+retail <- bind_rows(retail_old %>% filter(When < min(retail_new$When)) %>% mutate(value = value * splice),
+                    retail_new) %>%
+  rename(retail = value)
 
-# Retail Sales: 20-01-0008-01
-retail_old<-get_cansim_vector('52367215') %>%
-  select(When=Date,old=VALUE)
-retail_new<-get_cansim_vector('1446859973') %>%
-  select(When=Date,new=VALUE)
-retail<-data.frame(When=seq(min(retail_old$When),max(retail_new$When),by = "month")) %>%
-  left_join(retail_old,by='When') %>%
-  left_join(retail_new,by='When') %>%
-  mutate(splice=old*weighted.mean(new,When==min(retail_new$When))/weighted.mean(old,When==min(retail_new$When))) %>%
-  mutate(retail=ifelse(When<min(retail_new$When),splice,new)) %>%
-  select(When,retail)
+# Crude oil production: splice the 1985-2016 table onto the current one (overlap Jan-Feb 2016)
+oil_old <- get_series("oil_old")
+oil_new <- get_series("oil_new")
+overlap <- oil_new$When[oil_new$When %in% oil_old$When]
+splice <- mean(oil_new$value[oil_new$When %in% overlap]) / mean(oil_old$value[oil_old$When %in% overlap])
+oil <- bind_rows(oil_old %>% filter(When < min(oil_new$When)) %>% mutate(value = value * splice),
+                 oil_new) %>%
+  rename(oil = value)
 
-# Employment: 14-10-0287-01
-employment<-get_cansim_vector('v2064512') %>%
-  select(When=Date,employment=VALUE)
+# New vehicle sales are not seasonally adjusted; use X-13 via {seasonal}
+vehicles <- get_series("vehicles")
+vehicles$vehicles <- as.numeric(final(seas(ts(vehicles$value, frequency = 12,
+                                              start = c(year(vehicles$When[1]), month(vehicles$When[1]))))))
+vehicles <- vehicles %>% select(When, vehicles)
 
-# Self-Employment: 14-10-0288-01
-self_emp<-get_cansim_vector('v2067016') %>%
-  select(When=Date,self_emp=VALUE)
+# Shift-share indicator: national monthly real GDP by industry, weighted by Alberta's own
+# industry mix (previous year's shares), with oil & gas extraction replaced by Alberta crude production.
+ab_industry <- industry_vectors %>% filter(set == "alberta_annual") %>%
+  left_join(raw, by = "vector") %>% mutate(year = year(When)) %>% select(sector, year, value)
+mining_total <- ab_industry %>% filter(sector == "Mining, quarrying, and oil and gas extraction")
+oil_gas_support <- ab_industry %>%
+  filter(sector %in% c("Oil and gas extraction", "Support activities for mining, and oil and gas extraction")) %>%
+  group_by(year) %>% summarise(og = sum(value))
+other_mining <- mining_total %>% left_join(oil_gas_support, by = "year") %>%
+  transmute(sector = "Other mining", year, value = value - og)
+shares <- ab_industry %>%
+  filter(!sector %in% c("All industries", "Mining, quarrying, and oil and gas extraction")) %>%
+  bind_rows(other_mining) %>%
+  group_by(year) %>% mutate(share = value / sum(value)) %>% ungroup() %>%
+  transmute(sector, year = year + 1, share)          # weights for year t come from year t-1
+oil_sa <- oil %>% filter(When >= as.Date("2000-01-01"))
+oil_sa$value <- as.numeric(final(seas(ts(oil_sa$oil, frequency = 12, start = c(2000, 1)))))
+drivers <- industry_vectors %>% filter(set == "canada_monthly", sector != "All industries") %>%
+  left_join(raw, by = "vector") %>%
+  mutate(sector = ifelse(sector == "Mining, quarrying, and oil and gas extraction", "Other mining", sector)) %>%
+  filter(sector != "Oil and gas extraction") %>%
+  bind_rows(oil_sa %>% transmute(sector = "Oil and gas extraction", When, value)) %>%
+  select(sector, When, value) %>% arrange(sector, When) %>%
+  group_by(sector) %>% mutate(growth = log(value) - log(lag(value))) %>% ungroup()
+latest_share_year <- max(shares$year)
+shiftshare <- drivers %>%
+  mutate(year = pmin(year(When), latest_share_year)) %>%   # carry the latest known shares forward
+  inner_join(shares, by = c("sector", "year")) %>%
+  filter(!is.na(growth)) %>%
+  group_by(When) %>%
+  filter(n() >= 20) %>%                                    # require nearly all industries for that month
+  summarise(growth = sum(share * growth) / sum(share)) %>%
+  filter(When >= as.Date("2000-02-01")) %>%
+  mutate(shiftshare = exp(cumsum(growth))) %>%
+  select(When, shiftshare)
 
-# Vehicle Sales: 20-10-0085-01, then seasonal adjust using the `seasonal` package
-vehicles<-get_cansim_vector('v1617815652') %>%
-  select(When=Date,vehicles=VALUE) %>%
-  mutate(vehicles=as.numeric(predict(seas(ts(vehicles,frequency=12,start=c(min(year(as.Date(When))),1))))))
-
-# Merchandise Exports: 12-10-0119-01
-exports_energy<-get_cansim_vector('v1567090501') %>%
-  select(When=Date,exports_energy=VALUE)
-exports<-get_cansim_vector('v1567090443') %>%
-  select(When=Date,exports=VALUE)
-exports_nonenergy<-exports %>%
-  left_join(exports_energy,by="When") %>%
-  mutate(exports_nonenergy=exports-exports_energy) %>%
-  select(When,exports_nonenergy)
-
-# Oil Production
-oil_url<-'https://api.economicdata.alberta.ca/api/data?code=3caa6978-9647-4eb3-8de8-34a3abc06427'
-oil<-fromJSON(oil_url) %>%
-  mutate(When=as.yearmon(Date)) %>%
-  filter(Type=="Total oil production") %>%
-  select(When,oil=Value)
-oldoil<-read.csv("Data/old_oil.csv") %>% 
-  mutate(When=as.yearmon(Date,"%b-%y")) %>% 
-  select(When,oldoil=Adjusted.AB.Production) %>%
-  filter(When<="Jan 2007") %>%
-  mutate(oil=oldoil*(oil[1,2]/oldoil[n()])) %>%
-  filter(When!="Jan 2007") %>%
-  select(When,oil)
-oil<-oil %>%
-  mutate(When=as.yearmon(When)) %>%
-  rbind(oldoil) %>%
+# Combine into one monthly data frame and convert nominal series to real with Alberta CPI
+monthly <- get_series("mfg") %>% rename(mfg = value) %>%
+  full_join(get_series("trade") %>% rename(trade = value), by = "When") %>%
+  full_join(retail, by = "When") %>%
+  full_join(get_series("food") %>% rename(food = value), by = "When") %>%
+  full_join(get_series("housing") %>% rename(housing = value), by = "When") %>%
+  full_join(vehicles, by = "When") %>%
+  full_join(get_series("exports") %>% rename(exports = value), by = "When") %>%
+  full_join(get_series("exports_energy") %>% rename(exports_energy = value), by = "When") %>%
+  full_join(get_series("employment") %>% rename(employment = value), by = "When") %>%
+  full_join(get_series("seph") %>% rename(seph = value), by = "When") %>%
+  full_join(get_series("earnings") %>% rename(earnings = value), by = "When") %>%
+  full_join(oil, by = "When") %>%
+  full_join(shiftshare, by = "When") %>%
+  full_join(get_series("cpi") %>% rename(cpi = value), by = "When") %>%
   arrange(When) %>%
-  mutate(When=as.Date(When))
+  mutate(exports_nonenergy = exports - exports_energy,   # energy exports mostly track prices, not volumes
+         payroll = seph * earnings,                      # total weekly payroll (avoids composition effects in avg earnings)
+         across(c(mfg, trade, retail, food, exports_nonenergy, payroll), ~ .x / cpi)) %>%
+  select(-exports, -exports_energy, -earnings, -cpi) %>%
+  filter(When >= as.Date("2000-01-01"))
 
-# Annual GDP Growth
-GDP<-get_cansim_vector('62466959') %>%
-  select(When=Date,gdp=VALUE)
-GDP<-ts(GDP$gdp,frequency=1,start=c(1997,1))
+# Annual real GDP (current table; 36-10-0402 was discontinued after the 2024 reference year)
+gdp_annual <- get_series("gdp") %>% transmute(year = year(When), gdp = value)
 
-# Average hours per week: 14-10-0222-01
-hours<-get_cansim_vector('v54027409') %>%
-  select(When=Date,hours=VALUE)
-
-## Active drilling rigs
-# rig_url<-'https://api.economicdata.alberta.ca/api/data?code=9442d479-7ad6-47b6-aa12-ef03c750a50d'
-# rigs<-fromJSON(rig_url) %>%
-#   mutate(When=as.Date(Date)) %>%
-#   select(When,rigs=Value)
-
-## Consumer Price Index Data: 18-10-0004-01
-deflate<-get_cansim_vector('v41692327') %>%
-  filter(Date>="2001-01-01") %>%
-  select(VALUE) %>%
-  ts(frequency = 12,start = c(2001,01))
+# What is the latest month available for each indicator?
+releases <- monthly %>% pivot_longer(-When) %>% filter(!is.na(value)) %>%
+  group_by(name) %>% summarise(last_month = as.yearmon(max(When))) %>% arrange(last_month)
+print(releases, n = 20)
