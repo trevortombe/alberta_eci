@@ -16,6 +16,7 @@ jobs:
       - uses: r-lib/actions/setup-r@v2
         with:
           use-public-rspm: true   # pre-built Linux binaries: no compiling
+      # Same package list as update_budget.yml, so both workflows share one cache
       - uses: r-lib/actions/setup-r-dependencies@v2   # installs and caches packages between runs
         with:
           packages: |
@@ -28,6 +29,11 @@ jobs:
             any::jsonlite
             any::seasonal
             any::tempdisagg
+            any::tidyverse
+            any::quantmod
+            any::curl
+            any::readxl
+            any::ggthemes
       - name: Run R script
         run: Rscript AlbertaECI.R
       - name: Commit results if the index changed
