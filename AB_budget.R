@@ -5,7 +5,7 @@
 ###########################
 # Common Packages
 packages<-c("tidyverse","scales",
-            "quantmod","jsonlite","curl",
+            "quantmod","jsonlite","curl","readxl",
             "ggplot2","ggthemes")
 check.packages <- function(pkg){
   new.pkg <- pkg[!(pkg %in% installed.packages()[, "Package"])]
@@ -137,16 +137,75 @@ if (!is.null(boe_new) && nrow(boe_new) > 0) {
   write.csv(diff_hist, "Data/wcs_differential.csv", row.names = FALSE)
 }
 
-# Differential by delivery month (average of that month's trade-cycle quotes);
-# months beyond the latest quoted delivery month are held at the latest quote
+#####################################################################
+# Forward differentials from the Canadian Crude Index (Auspice,     #
+# ticker CDNCRUDE). Its daily file gives the fixed WCS price for    #
+# each contract month in the index (WCS leg = ICE TDX futures at    #
+# 14:30 ET) along with the index-weighted WTI price.                #
+#####################################################################
+cci <- tryCatch({
+  f <- tempfile(fileext = ".xlsx")
+  download.file("http://content.auspicecapital.com/CCI_webData.xlsx", f, mode = "wb", quiet = TRUE)
+  read_excel(f, sheet = 1)
+}, error = function(e) {
+  message("CCI download failed; holding the latest CalRock quote for future months: ", conditionMessage(e))
+  NULL
+})
+cci_forward <- NULL
+if (!is.null(cci)) {
+  cci_last <- cci %>% filter(!is.na(CDNCRUDE), !is.na(Month1)) %>% slice_tail(n = 1)
+  cci_date <- as.Date(cci_last$Date)
+  cci_wti <- cci_last$WTI
+  cci_diff3 <- -cci_last$`CDNCRUDE vs WTI Differential`        # index-weighted differential, positive = discount
+  cci_forward <- tibble(k = 1:4) %>%
+    mutate(month  = as.Date(sapply(k, function(i) format(as.Date(cci_last[[paste0("Month", i)]])))),
+           price  = sapply(k, function(i) cci_last[[paste0("Price", i)]]),
+           weight = sapply(k, function(i) cci_last[[paste0("Weight", i)]])) %>%
+    filter(!is.na(month), !is.na(price)) %>%
+    left_join(results %>% transmute(month = as.Date(as.yearmon(label)), wti = settle,
+                                    stale = as.numeric(Sys.Date() - date) > 5), by = "month")
+  use_monthly <- !any(is.na(cci_forward$wti)) && !any(cci_forward$stale)
+  if (use_monthly) {
+    # WTI futures spreads from Yahoo, level set to the WTI in the CCI file (same pricing time as the WCS leg)
+    shift <- sum(cci_forward$weight * cci_forward$wti) / sum(cci_forward$weight) - cci_wti
+    cci_forward <- cci_forward %>% mutate(diff = (wti - shift) - price)
+    # Guard against stale or odd Yahoo contracts: implausible monthly values -> use the weighted differential
+    use_monthly <- all(cci_forward$diff > 0) && all(abs(cci_forward$diff - cci_diff3) < 5)
+  }
+  if (!use_monthly) {
+    message("Using the CCI's index-weighted differential for all forward months")
+    cci_forward <- cci_forward %>% mutate(diff = cci_diff3)
+  }
+  print(cci_forward)
+  cat("CCI weighted differential:", round(cci_diff3, 2), " implied by monthly prices:",
+      round(sum(cci_forward$weight * cci_forward$diff) / sum(cci_forward$weight), 2), "\n")
+}
+
+# Differential by delivery month for the fiscal year:
+#  - months already traded: average of that month's CalRock quotes
+#  - later months: CCI forward differentials (last CCI month held after that)
+#  - if the CCI file isn't available: hold the latest CalRock quote
 latest_diff <- tail(diff_hist$differential, 1)
 latest_diff_date <- max(diff_hist$date)
+last_calrock_month <- max(diff_hist$delivery_month)
 diff_monthly <- tibble(month = seq(fy_start, fy_end, by = "month")) %>%
-  left_join(diff_hist %>% group_by(month = delivery_month) %>% summarise(diff = mean(differential)), by = "month") %>%
-  mutate(diff = ifelse(month > max(diff_hist$delivery_month), latest_diff, diff)) %>%
-  fill(diff, .direction = "downup")
+  left_join(diff_hist %>% group_by(month = delivery_month) %>% summarise(diff = mean(differential)), by = "month")
+if (!is.null(cci_forward)) {
+  diff_monthly <- diff_monthly %>%
+    left_join(cci_forward %>% select(month, cci = diff), by = "month") %>%
+    mutate(cci = ifelse(month > max(cci_forward$month), tail(cci_forward$diff, 1), cci),
+           diff = ifelse(month > last_calrock_month, cci, diff),
+           source = ifelse(month > last_calrock_month, "CCI forward", "CalRock")) %>%
+    select(-cci)
+} else {
+  diff_monthly <- diff_monthly %>%
+    mutate(diff = ifelse(month > last_calrock_month, latest_diff, diff),
+           source = ifelse(month > last_calrock_month, "Latest CalRock held flat", "CalRock"))
+}
+diff_monthly <- diff_monthly %>% fill(diff, .direction = "downup")
 print(diff_monthly)
 fy_diff_avg <- mean(diff_monthly$diff)
+forward_diff <- diff_monthly %>% filter(month > last_calrock_month) %>% pull(diff) %>% mean()
 
 
 # Monthly average prices for fiscal year-to-date
@@ -209,7 +268,7 @@ ggplot(plotdata %>% mutate(sign=ifelse(id==1,"net",sign)))+
                    paste0(format(results[1,]$date, "%B "),
                          as.integer(format(results[1,]$date, "%d")),", ",
                          format(results[1,]$date, "%Y"))),
-       subtitle="Source: Own calculations from Alberta Budget 2026, Yahoo Finance, and CalRock WCS differentials reported by Reuters (via BOE Report).",
+       subtitle="Source: Own calculations from Alberta Budget 2026, Yahoo Finance, CalRock WCS differentials reported by Reuters (via BOE Report),\nand the Auspice Canadian Crude Index.",
        caption="Graph by @trevortombe")
 ggsave("Figures/BudgetBalanceWaterfall.png",width=8,height=4)
 
@@ -265,7 +324,7 @@ ab_oil_tracker <- function(today = Sys.Date(),
     fill(wti, .direction = "down") %>%
     fill(exch, .direction = "down") %>%
     mutate(month = floor_date(date, "month")) %>%
-    left_join(diff_monthly, by = "month") %>%
+    left_join(diff_monthly %>% select(month, diff), by = "month") %>%
     mutate(
       phase = if_else(date <= today, "Actual/YTD", "Projected"),
       wti_used = if_else(date <= today, wti, latest_wti),
@@ -293,10 +352,12 @@ ab_oil_tracker <- function(today = Sys.Date(),
   fan_df <- tibble(
     date = if (today == fy_end) today else seq(today + 1, fy_end, by = "day")
   ) %>%
+    mutate(month = floor_date(date, "month")) %>%
+    left_join(diff_monthly %>% select(month, diff), by = "month") %>%
     mutate(
       day_index = row_number(),
-      daily_low = base_day_bal + oil_day_sens * (bot_range - oil_assumption) + diff_day_sens * (latest_diff - diff_assumption),
-      daily_high = base_day_bal + oil_day_sens * (top_range - oil_assumption) + diff_day_sens * (latest_diff - diff_assumption),
+      daily_low = base_day_bal + oil_day_sens * (bot_range - oil_assumption) + diff_day_sens * (diff - diff_assumption),
+      daily_high = base_day_bal + oil_day_sens * (top_range - oil_assumption) + diff_day_sens * (diff - diff_assumption),
       cum_low = last_actual_cum + cumsum(daily_low),
       cum_high = last_actual_cum + cumsum(daily_high),
       
@@ -424,6 +485,7 @@ ggplot(df %>% filter(phase=="Actual/YTD"), aes(x = date)) +
       "Note: These are experimental estimates based on the latest fiscal updates and daily oil price and exchange rate data",
       "\nLatest WTI: $", round(s$latest_wti, 2),
       " | WCS differential: $", format(round(s$latest_diff, 2), nsmall = 2), " (", format(latest_diff_date, "%b %d"), ")",
+      if (!is.na(forward_diff)) paste0(", rest of year $", format(round(forward_diff, 2), nsmall = 2)) else "",
       " | Cumulative balance: ", dollar(s$ytd_balance, scale = 1e-9, suffix = "B",0.1),
       " | Fiscal year projection (at latest WTI futures): ", dollar(futures_proj$cum_balance_settle, scale = 1e-9, suffix = "B",0.1)
     ),
