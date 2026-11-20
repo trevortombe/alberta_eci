@@ -130,10 +130,19 @@ plotdata2 <- eci %>%
   select(Ref_Date, ABindex) %>%
   mutate(year = year(as.Date(Ref_Date))) %>%
   left_join(gdp_growth, by = "year") %>%
+  left_join(pop_growth %>% mutate(Ref_Date = as.yearmon(When)) %>% select(-When), by = "Ref_Date") %>%
   mutate(GDPGrowth_fit = ifelse(month(as.Date(Ref_Date)) %in% c(1, 12), NA, GDPGrowth))
-regresults <- lm(GDPGrowth_fit ~ ABindex, data = plotdata2)
+# The index measures growth relative to trend; population growth shifts Alberta's trend rate,
+# so it enters the mapping from the index to GDP growth
+regresults <- lm(GDPGrowth_fit ~ ABindex + pop_growth, data = plotdata2)
 print(summary(regresults))
-plotdata3 <- plotdata2 %>% mutate(index = coef(regresults)[1] + coef(regresults)[2] * ABindex)
+plotdata3 <- plotdata2 %>% mutate(index = predict(regresults, newdata = plotdata2))
+
+# For the monthly GDP levels below, use the index alone. Chow-Lin benchmarking to annual GDP already
+# absorbs shifts in trend growth; adding population there double-counts it (tested 2010-2025: errors
+# rose from 1.2 to 1.6 points outside 2020-21).
+regresults_levels <- lm(GDPGrowth_fit ~ ABindex, data = plotdata2)
+plotdata3 <- plotdata3 %>% mutate(index_levels = predict(regresults_levels, newdata = plotdata2))
 
 # Implied growth for years StatCan hasn't published yet (average of available months)
 nowcast <- plotdata3 %>% filter(year > max(gdp_annual$year)) %>%
@@ -141,18 +150,21 @@ nowcast <- plotdata3 %>% filter(year > max(gdp_annual$year)) %>%
 print(nowcast)
 
 p <- ggplot(plotdata3, aes(Ref_Date)) +
-  geom_col(aes(y = GDPGrowth), fill = colbar[2], color = colbar[2]) +
+  geom_col(data=filter(plotdata3,!month(as.Date(Ref_Date)) %in% c(1,12)),
+           aes(y = GDPGrowth), fill = colbar[2], color = colbar[2]) +
+  # geom_point(data=filter(plotdata3,month(as.Date(Ref_Date))==6),aes(y=GDPGrowth),
+  #            size=2.5,stroke=2.5,shape=21,fill='white',color=col[2])+
   geom_hline(yintercept = 0, colour = "black", linewidth = 1) +
   geom_line(aes(y = index), linewidth = 1.5, color = col[1]) +
-  annotate("text", x = 2013.5, y = -0.0375, label = "Actual GDP\nGrowth", fontface = "bold", color = colbar[2]) +
-  annotate("text", x = 2018, y = 0.125, label = "\"Alberta Economic\nConditions Index\"", fontface = "bold", color = col[1], hjust = 1) +
+  annotate("text", x = 2013.25, y = -0.0375, label = "Actual GDP\nGrowth", fontface = "bold", color = colbar[2]) +
+  annotate("text", x = 2019, y = 0.125, label = "\"Alberta Economic\nConditions Index\"", fontface = "bold", color = col[1], hjust = 1) +
   mytheme +
   scale_y_continuous(breaks = pretty_breaks(8), label = percent) +
   scale_x_continuous(breaks = seq(2002.5, max(plotdata3$year) + 0.5, 2), labels = seq(2002, max(plotdata3$year), 2)) +
   labs(x = "", y = "Year-over-Year Change (%)",
        title = paste("Index of Alberta's Monthly Economic Conditions, Jan 2002 to", max(plotdata3$Ref_Date)),
-       subtitle = "The index is constructed to have mean zero and unit variance. It is then rescaled to best fit actual real GDP growth.",
-       caption = "Sources: Own calculations from multiple monthly data series and Statistics Canada table 36-10-0711. Graph by @trevortombe.")
+       subtitle = "The index has mean zero and unit variance. Combined with population growth, it is rescaled to best fit actual real GDP growth.",
+       caption = "Sources: Own calculations from multiple monthly data series and Statistics Canada tables 36-10-0711 and 17-10-0009. Graph by @trevortombe.")
 p
 ggsave("Figures/GDPplot.png", p, width = 8, height = 4, dpi = 200)
 
@@ -173,7 +185,7 @@ write.csv(table, file = "Data/ECI_Index_Data.csv", row.names = FALSE)
 # 3. Chow-Lin: distribute annual GDP across months, extrapolate #
 #################################################################
 index_levels <- tibble(Ref_Date = as.yearmon(seq(as.Date("2001-01-01"), by = "month", length.out = 12)), index = 1) %>%
-  bind_rows(plotdata3 %>% select(Ref_Date, index))
+  bind_rows(plotdata3 %>% select(Ref_Date, index = index_levels))
 for (i in 13:nrow(index_levels)) index_levels$index[i] <- index_levels$index[i - 12] * (1 + index_levels$index[i])
 index_levels$index <- as.numeric(final(seas(ts(index_levels$index, frequency = 12, start = c(2001, 1)))))
 

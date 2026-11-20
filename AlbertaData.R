@@ -28,7 +28,8 @@ vectors <- c(
   oil_old        = "18050",      # 25-10-0014 Crude oil production (1985 to Feb 2016)
   oil_new        = "107757710",  # 25-10-0063 Crude oil production, m3 (2016+)
   cpi            = "41692327",   # 18-10-0004 Alberta CPI, all-items
-  gdp            = "1793287969"  # 36-10-0711 Alberta real GDP at basic prices (annual)
+  gdp            = "1793287969", # 36-10-0711 Alberta real GDP at basic prices (annual)
+  population     = "15"          # 17-10-0009 Alberta population (quarterly)
 )
 # National monthly GDP by industry (36-10-0434) and Alberta annual GDP by industry (36-10-0711)
 industry_vectors <- read.csv("Data/industry_vectors.csv", colClasses = "character")
@@ -134,6 +135,16 @@ monthly <- get_series("mfg") %>% rename(mfg = value) %>%
 
 # Annual real GDP (current table; 36-10-0402 was discontinued after the 2024 reference year)
 gdp_annual <- get_series("gdp") %>% transmute(year = year(When), gdp = value)
+
+# Population: quarterly estimates (1st day of each quarter), interpolated to months, then
+# year-over-year growth. Months after the latest estimate carry its growth rate forward.
+population <- get_series("population") %>% rename(pop = value)
+pop_growth <- tibble(When = seq(min(population$When), max(monthly$When), by = "month")) %>%
+  left_join(population, by = "When") %>%
+  mutate(pop = na.approx(pop, na.rm = FALSE),
+         pop_growth = log(pop) - log(lag(pop, 12)),
+         pop_growth = na.locf(pop_growth, na.rm = FALSE)) %>%
+  select(When, pop_growth)
 
 # What is the latest month available for each indicator?
 releases <- monthly %>% pivot_longer(-When) %>% filter(!is.na(value)) %>%

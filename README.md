@@ -20,4 +20,4 @@ The latest ECI for Sep 2026 is 1.06 (preliminary: not all series have been relea
 
 ------------------------------------------------------------------------
 
-The index was last updated on November 20, 2026 at 10:09 CST.
+The index was last updated on November 20, 2026 at 10:51 CST.
