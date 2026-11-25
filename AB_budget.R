@@ -43,11 +43,28 @@ mytheme<-theme_minimal()+theme(
 # Start of main code #
 ######################
 
+# Yahoo occasionally refuses a request from GitHub's runners ("cannot open the
+# connection"), so retry the essential downloads a few times before giving up
+get_yahoo <- function(sym, tries = 4) {
+  for (i in 1:tries) {
+    ok <- tryCatch({
+      suppressWarnings(getSymbols(sym, src = "yahoo", auto.assign = TRUE, env = globalenv()))
+      TRUE
+    }, error = function(e) {
+      message("Yahoo fetch of ", sym, " failed (attempt ", i, "): ", conditionMessage(e))
+      FALSE
+    })
+    if (ok) return(invisible(TRUE))
+    if (i < tries) Sys.sleep(15 * i)
+  }
+  stop("Could not download ", sym, " from Yahoo after ", tries, " attempts")
+}
+
 # Load the latest WTI prices
-getSymbols("CL=F", src = "yahoo")
+get_yahoo("CL=F")
 
 # Exchange rate
-getSymbols("CADUSD=X", src = "yahoo")
+get_yahoo("CADUSD=X")
 
 # This can fetch the futures prices
 # See: https://ca.finance.yahoo.com/quote/CL%3DF/futures/
@@ -283,10 +300,7 @@ ab_oil_tracker <- function(today = Sys.Date(),
                            exch_assumption = 73,
                            exch_sensitivity = -440e6) {
   
-  #--- fetch WTI futures from Yahoo
-  suppressWarnings(
-    getSymbols("CL=F", src = "yahoo", from = fy_start, auto.assign = TRUE)
-  )
+  #--- WTI and exchange rate already downloaded at the top of the script
   wti <- `CL=F`
   exch <- `CADUSD=X`
   
