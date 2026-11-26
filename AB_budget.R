@@ -512,4 +512,4 @@ ggplot(df %>% filter(phase=="Actual/YTD"), aes(x = date)) +
         label = paste0("Needed to balance over the\nrest of the fiscal year: ", dollar(to_balance_remain,2),"/bbl")),
     hjust = 1, size = 2.75,color=col[3]
   )
-ggsave("Figures/BudgetBalanceProjection.png",width=9,height=4.5)
+ggsave("Figures/BudgetBalanceProjection.png",width=10,height=5)
