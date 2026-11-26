@@ -12,7 +12,7 @@ For comparison, the Government of Alberta maintains a separate "Alberta Activity
 
 Recent months are published once at least half of the index weight has been released; those months are flagged as preliminary and will be revised as the remaining data arrive.
 
-The latest ECI for Sep 2026 is 0.91 (preliminary: not all series have been released for this month). The full time series since Jan 2002 is plotted below:
+The latest ECI for Sep 2026 is 0.70 (preliminary: not all series have been released for this month). The full time series since Jan 2002 is plotted below:
 
 ![Alberta ECI](Figures/plot.png)
 
@@ -20,4 +20,4 @@ The latest ECI for Sep 2026 is 0.91 (preliminary: not all series have been relea
 
 ------------------------------------------------------------------------
 
-The index was last updated on November 25, 2026 at 17:39 CST.
+The index was last updated on November 26, 2026 at 17:53 CST.
